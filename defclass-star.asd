@@ -1,4 +1,4 @@
-;; -*- mode: Lisp; Syntax: Common-Lisp; Package: computed-class; -*-
+;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
 ;;; Copyright (c) 2006 by the authors.
 ;;;
