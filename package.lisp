@@ -29,9 +29,13 @@
    #:defclass*
    #:defcondition*
    
+   #:default-accessor-name-transformer
+   
    #:*accessor-name-transformer*
    #:*automatic-accessors-p*
    
+   #:default-initarg-name-transformer
+
    #:*initarg-name-transformer*
    #:*automatic-initargs-p*
    

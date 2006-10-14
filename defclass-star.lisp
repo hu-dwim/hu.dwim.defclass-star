@@ -25,7 +25,8 @@
 (enable-sharp-boolean-syntax)
 
 (defmacro make-name-transformer (&rest elements)
-  `(lambda (name)
+  `(lambda (name definition)
+    (declare (ignorable definition))
     (concatenate-symbol ,@(mapcar (lambda (el)
                                     (if (and (symbolp el)
                                              (string= (symbol-name el) "NAME"))
@@ -33,10 +34,26 @@
                                         el))
                                   elements))))
 
-(defvar *accessor-name-transformer* (make-name-transformer name "-OF"))
+(defun default-accessor-name-transformer (name definition)
+  (let ((type (getf definition :type)))
+    (if (eq type 'boolean)
+        (let* ((name-string (string name))
+               (last-char (aref name-string (1- (length name-string)))))
+          (cond ((char-equal last-char #\p)
+                 name)
+                ((find #\- name-string)
+                 (concatenate-symbol name "-P"))
+                (t (concatenate-symbol name "P"))))
+        (concatenate-symbol name "-OF"))))
+
+(defvar *accessor-name-transformer* 'default-accessor-name-transformer)
 (defvar *automatic-accessors-p* #t)
 
-(defvar *initarg-name-transformer* (make-name-transformer name (symbol-package :asdf)))
+(defun default-initarg-name-transformer (name definition)
+  (declare (ignorable definition))
+  (concatenate-symbol name #.(symbol-package :asdf)))
+
+(defvar *initarg-name-transformer* 'default-initarg-name-transformer)
 (defvar *automatic-initargs-p* #t)
 
 ;; TODO
@@ -44,6 +61,8 @@
 ;;(defvar *export-accessor-names-p* #f)
 
 (defun process-slot-definition (definition)
+  (unless (consp definition)
+    (setf definition (list definition)))
   (let ((name (pop definition))
         (initform 'missing))
     (when definition
@@ -60,11 +79,11 @@
                 (list :initform initform))
               (if (eq accessor 'missing)
                   (when *automatic-accessors-p*
-                    (list :accessor (funcall *accessor-name-transformer* name)))
+                    (list :accessor (funcall *accessor-name-transformer* name definition)))
                   (list :accessor accessor))
               (if (eq initarg 'missing)
                   (when *automatic-initargs-p*
-                    (list :initarg (funcall *initarg-name-transformer* name)))
+                    (list :initarg (funcall *initarg-name-transformer* name definition)))
                   (list :initarg initarg))
               definition))))
 

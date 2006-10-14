@@ -42,9 +42,9 @@
 (defmacro test* (name &body body)
   `(test ,name
     (let ((*automatic-accessors-p* t)
-          (*accessor-name-transformer* (make-name-transformer name "-OF"))
+          (*accessor-name-transformer* 'default-accessor-name-transformer)
           (*automatic-initargs-p* t)
-          (*initarg-name-transformer* (make-name-transformer name (symbol-package :asdf))))
+          (*initarg-name-transformer* 'default-initarg-name-transformer))
       ,@body)))
 
 (test* nop
@@ -71,6 +71,12 @@
          (slot1 :accessor slot1-custom :initarg slot1-custom))
   (slot= (slot1)
          (slot1 :accessor slot1-of :initarg :slot1))
+  (slot= (slot1 :unbound :type boolean)
+         (slot1 :accessor slot1p :initarg :slot1 :type boolean))
+  (slot= (slotp :unbound :type boolean)
+         (slotp :accessor slotp :initarg :slotp :type boolean))
+  (slot= (slot-name :unbound :type boolean)
+         (slot-name :accessor slot-name-p :initarg :slot-name :type boolean))
   (let ((*automatic-accessors-p* nil)
         (*automatic-initargs-p* nil))
     (slot= (slot1)
