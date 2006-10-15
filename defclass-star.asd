@@ -31,21 +31,22 @@
   :version "0.1"
   :author ("Attila Lendvai <attila.lendvai@gmail.com>")
   :maintainer ("Attila Lendvai <attila.lendvai@gmail.com>")
-  :licence "BSD"
+  :licence "Public Domain / 0-clause MIT"
   :description "A defclass* to simplify life."
   :components
   ((:file "package")
    (:file "duplicates" :depends-on ("package"))
-   (:file "defclass-star" :depends-on ("duplicates"))))
+   (:file "defclass-star" :depends-on ("duplicates"))
+   (:static-file "test.lisp")))
 
-(defsystem :defclass-star.test
+(defsystem #:defclass-star.test
   :description "Tests for the defclass-star system."
   :depends-on (:defclass-star :fiveam)
   :components
   ((:file "test")))
 
 (defmethod perform ((op test-op) (system (eql (find-system :defclass-star))))
-  (operate 'load-op :defclass-star.test)
+  (operate 'load-op '#:defclass-star.test)
   (funcall (read-from-string "5am:run!")))
 
 (defmethod operation-done-p ((op test-op) (system (eql (find-system :defclass-star))))
