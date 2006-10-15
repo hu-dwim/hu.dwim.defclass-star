@@ -25,6 +25,9 @@
 (defpackage #:defclass-star.test
   (:use :cl :defclass-star :5am))
 
+(defpackage #:defclass-star.test-dummy
+  (:use :cl :defclass-star :5am))
+
 (in-package #:defclass-star.test)
 
 (def-suite :defclass-star :description "defclass* tests")
@@ -96,6 +99,11 @@
           ((slot1 :accessor slot1-zork :initarg :slot1))
           (1 2)
           (3 4)))
+  (exp= (defclass* some-class (some super classes)
+          ((slot1))
+          (:accessor-name-package (find-package '#:defclass-star.test-dummy)))
+        (defclass some-class (some super classes)
+          ((slot1 :accessor defclass-star.test-dummy::slot1-of :initarg :slot1))))
   (signals error (macroexpand-1 '(defclass* some-class (some super classes)
                                   ((slot1))
                                   (:accessor-name-transformer too many)))))

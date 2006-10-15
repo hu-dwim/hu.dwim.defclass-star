@@ -35,17 +35,25 @@
                                   elements))))
 
 (defun default-accessor-name-transformer (name definition)
-  (let ((type (getf definition :type)))
+  (let ((type (getf definition :type))
+        (package (if (packagep *accessor-name-package*)
+                     *accessor-name-package*
+                     (case *accessor-name-package*
+                       (:slot-name (symbol-package name))
+                       (:default *package*)
+                       (t *package*)))))
     (if (eq type 'boolean)
         (let* ((name-string (string name))
                (last-char (aref name-string (1- (length name-string)))))
           (cond ((char-equal last-char #\p)
                  name)
                 ((find #\- name-string)
-                 (concatenate-symbol name "-P"))
-                (t (concatenate-symbol name "P"))))
-        (concatenate-symbol name "-OF"))))
+                 (concatenate-symbol name "-P" package))
+                (t (concatenate-symbol name "P" package))))
+        (concatenate-symbol name "-OF" package))))
 
+(defvar *accessor-name-package* nil ;; :slot-name
+  ":slot-name means the home-package of the slot-name symbol, nil means *package*")
 (defvar *accessor-name-transformer* 'default-accessor-name-transformer)
 (defvar *automatic-accessors-p* #t)
 
@@ -101,6 +109,7 @@
                    (t (push option clean-options)))))
       (dolist (option options)
         (rebinding-table
+         :accessor-name-package *accessor-name-package*
          :accessor-name-transformer *accessor-name-transformer*
          :automatic-accessors-p *automatic-accessors-p*
          :initarg-name-transformer *initarg-name-transformer*
