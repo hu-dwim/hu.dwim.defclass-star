@@ -52,10 +52,16 @@
                 (t (concatenate-symbol name "P" package))))
         (concatenate-symbol name "-OF" package))))
 
-(defvar *accessor-name-package* nil ;; :slot-name
-  ":slot-name means the home-package of the slot-name symbol, nil means *package*")
+;; more or less public vars (it's discouraged to set them globally)
+(defvar *accessor-name-package* nil
+  "A package, or :slot-name means the home-package of the slot-name symbol and nil means *package*")
 (defvar *accessor-name-transformer* 'default-accessor-name-transformer)
 (defvar *automatic-accessors-p* #t)
+
+;; these control whether the respective names should be exported from *package* (which is samples at macroexpan time)
+(defvar *export-class-name-p* nil)
+(defvar *export-accessor-names-p* nil)
+(defvar *export-slot-names-p* nil)
 
 (defun default-initarg-name-transformer (name definition)
   (declare (ignorable definition))
@@ -64,15 +70,16 @@
 (defvar *initarg-name-transformer* 'default-initarg-name-transformer)
 (defvar *automatic-initargs-p* #t)
 
-;; TODO
-;;(defvar *export-slot-names-p* #f)
-;;(defvar *export-accessor-names-p* #f)
+;; expand-time temporary dynamic vars
+(defvar *accessor-names*)
+(defvar *slot-names*)
 
 (defun process-slot-definition (definition)
   (unless (consp definition)
     (setf definition (list definition)))
   (let ((name (pop definition))
         (initform 'missing))
+    (push name *slot-names*)
     (when definition
       (setf initform (pop definition))
       (when (eq initform :unbound)
@@ -82,18 +89,21 @@
     (let ((accessor (getf definition :accessor 'missing))
           (initarg (getf definition :initarg 'missing)))
       (remf-keywords definition :accessor :initform :initarg)
-      (append (list name)
-              (unless (eq initform 'missing)
-                (list :initform initform))
-              (if (eq accessor 'missing)
-                  (when *automatic-accessors-p*
-                    (list :accessor (funcall *accessor-name-transformer* name definition)))
-                  (list :accessor accessor))
-              (if (eq initarg 'missing)
-                  (when *automatic-initargs-p*
-                    (list :initarg (funcall *initarg-name-transformer* name definition)))
-                  (list :initarg initarg))
-              definition))))
+      (prog1
+          (append (list name)
+                  (unless (eq initform 'missing)
+                    (list :initform initform))
+                  (if (eq accessor 'missing)
+                      (when *automatic-accessors-p*
+                        (setf accessor (funcall *accessor-name-transformer* name definition))
+                        (list :accessor accessor))
+                      (list :accessor accessor))
+                  (if (eq initarg 'missing)
+                      (when *automatic-initargs-p*
+                        (list :initarg (funcall *initarg-name-transformer* name definition)))
+                      (list :initarg initarg))
+                  definition)
+        (push accessor *accessor-names*)))))
 
 (defun extract-options-into-bindings (options)
   (let ((binding-names)
@@ -113,18 +123,42 @@
          :accessor-name-transformer *accessor-name-transformer*
          :automatic-accessors-p *automatic-accessors-p*
          :initarg-name-transformer *initarg-name-transformer*
-         :automatic-initargs-p *automatic-initargs-p*)))
+         :automatic-initargs-p *automatic-initargs-p*
+         :export-class-name-p *export-class-name-p*
+         :export-accessor-names-p *export-accessor-names-p*
+         :export-slot-names-p *export-slot-names-p*)))
     (values binding-names binding-values (nreverse clean-options))))
 
 (macrolet ((def-star-macro (macro-name expand-to-name)
                `(defmacro ,macro-name (name direct-superclasses direct-slots &rest options)
-                 (multiple-value-bind (binding-names binding-values clean-options)
-                     (extract-options-into-bindings options)
-                   (progv binding-names (mapcar 'eval binding-values)
-                     `(,',expand-to-name ,name
-                       ,direct-superclasses
-                       ,(mapcar 'process-slot-definition direct-slots)
-                       ,@clean-options))))))
+                 (unless (eq (symbol-package name) *package*)
+                   (warn "defclass* for ~A while its home package is not *package* (~A)"
+                         (let ((*package* (find-package "KEYWORD")))
+                           (format nil "~S" name)) *package*))
+                 (let ((*accessor-names* nil)
+                       (*slot-names* nil))
+                   (multiple-value-bind (binding-names binding-values clean-options)
+                       (extract-options-into-bindings options)
+                     (progv binding-names (mapcar #'eval binding-values)
+                       (let ((result `(,',expand-to-name ,name
+                                       ,direct-superclasses
+                                       ,(mapcar 'process-slot-definition direct-slots)
+                                       ,@clean-options)))
+                         (if (or *export-class-name-p*
+                                 *export-accessor-names-p*
+                                 *export-slot-names-p*)
+                             `(progn
+                               ,result
+                               (export (list ,@(mapcar (lambda (el)
+                                                         (list 'quote el))
+                                                       (append (when *export-class-name-p*
+                                                                 (list name))
+                                                               (when *export-accessor-names-p*
+                                                                 (nreverse *accessor-names*))
+                                                               (when *export-slot-names-p*
+                                                                 (nreverse *slot-names*)))))
+                                ,*package*))
+                             result))))))))
   (def-star-macro defclass* defclass)
   (def-star-macro defcondition* define-condition))
 

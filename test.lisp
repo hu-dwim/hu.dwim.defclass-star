@@ -38,8 +38,14 @@
   `(is (equal (macroexpand-1 ',macro)
               ',result)))
 
+(defmacro exp=* (macro result)
+  `(is (equal (macroexpand-1 ',macro)
+              ',(eval result))))
+
 (defmacro slot= (slotd result)
-  `(is (equal (defclass-star::process-slot-definition ',slotd)
+  `(is (equal (let ((defclass-star::*accessor-names* nil)
+                    (defclass-star::*slot-names* nil))
+                (defclass-star::process-slot-definition ',slotd))
              ',result)))
 
 (defmacro test* (name &body body)
@@ -47,7 +53,10 @@
     (let ((*automatic-accessors-p* t)
           (*accessor-name-transformer* 'default-accessor-name-transformer)
           (*automatic-initargs-p* t)
-          (*initarg-name-transformer* 'default-initarg-name-transformer))
+          (*initarg-name-transformer* 'default-initarg-name-transformer)
+          (defclass-star::*export-class-name-p* nil)
+          (defclass-star::*export-accessor-names-p* nil)
+          (defclass-star::*export-slot-names-p* nil))
       ,@body)))
 
 (test* nop
@@ -126,4 +135,15 @@
         (defclass some-class (some super classes)
           ((slot1 :initform 42 :documentation "zork"))
           (1 2)
-          (3 4))))
+          (3 4)))
+  (exp=* (defclass* some-class (some super classes)
+          ((slot1 42 :documentation "zork")
+           (slot2 :unbound :accessor slot2-custom))
+          (:export-accessor-names-p t)
+          (:export-class-name-p t)
+          (:export-slot-names-p t))
+        `(progn
+          (defclass some-class (some super classes)
+            ((slot1 :initform 42 :accessor slot1-of :initarg :slot1 :documentation "zork")
+             (slot2 :accessor slot2-custom :initarg :slot2)))
+          (export (list 'some-class 'slot1-of 'slot2-custom 'slot1 'slot2) ,*package*))))

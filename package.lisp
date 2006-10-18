@@ -30,16 +30,14 @@
    #:defcondition*
    
    #:default-accessor-name-transformer
+   #:default-initarg-name-transformer
+   #:make-name-transformer
    
+   ;; more or less public vars (it's discouraged to set them globally)
    #:*accessor-name-transformer*
    #:*automatic-accessors-p*
-   
-   #:default-initarg-name-transformer
-
    #:*initarg-name-transformer*
    #:*automatic-initargs-p*
-   
-   #:make-name-transformer
    ))
 
 
