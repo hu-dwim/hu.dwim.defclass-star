@@ -18,6 +18,34 @@
                                         el))
                                   elements))))
 
+;; more or less public vars (it's discouraged to set them globally)
+(defvar *accessor-name-package* nil
+  "A package, or :slot-name means the home-package of the slot-name symbol and nil means *package*")
+(defvar *accessor-name-transformer* 'default-accessor-name-transformer)
+(defvar *automatic-accessors-p* #t)
+
+;; these control whether the respective names should be exported from *package* (which is samples at macroexpan time)
+(defvar *export-class-name-p* nil)
+(defvar *export-accessor-names-p* nil)
+(defvar *export-slot-names-p* nil)
+
+(defvar *initarg-name-transformer* 'default-initarg-name-transformer)
+(defvar *automatic-initargs-p* #t)
+
+(defvar *allowed-slot-definition-properties* '(:documentation :type :reader :writer :allocation
+                                               :compute-as :component :backtrack)
+  "Holds a list of keywords that are allowed in slot definitions (:accessor and :initarg is implicitly included) .")
+
+;; expand-time temporary dynamic vars
+(defvar *accessor-names*)
+(defvar *slot-names*)
+
+(define-condition defclass-star-style-warning (simple-condition style-warning)
+  ())
+
+(defun style-warn (datum &rest args)
+  (warn 'defclass-star-style-warning :format-control datum :format-arguments args))
+
 (defun default-accessor-name-transformer (name definition)
   (let ((type (getf definition :type))
         (package (if (packagep *accessor-name-package*)
@@ -36,36 +64,9 @@
                 (t (concatenate-symbol name "P" package))))
         (concatenate-symbol name "-OF" package))))
 
-;; more or less public vars (it's discouraged to set them globally)
-(defvar *accessor-name-package* nil
-  "A package, or :slot-name means the home-package of the slot-name symbol and nil means *package*")
-(defvar *accessor-name-transformer* 'default-accessor-name-transformer)
-(defvar *automatic-accessors-p* #t)
-
-;; these control whether the respective names should be exported from *package* (which is samples at macroexpan time)
-(defvar *export-class-name-p* nil)
-(defvar *export-accessor-names-p* nil)
-(defvar *export-slot-names-p* nil)
-
 (defun default-initarg-name-transformer (name definition)
   (declare (ignorable definition))
   (concatenate-symbol name #.(symbol-package :asdf)))
-
-(defvar *initarg-name-transformer* 'default-initarg-name-transformer)
-(defvar *automatic-initargs-p* #t)
-
-(defvar *allowed-slot-definition-properties* (list :documentation :type :reader :writer :allocation)
-  "Holds a list of keywords that are allowed in slot definitions (:accessor and :initarg is implicitly included) .")
-
-;; expand-time temporary dynamic vars
-(defvar *accessor-names*)
-(defvar *slot-names*)
-
-(define-condition defclass-star-style-warning (simple-condition style-warning)
-  ())
-
-(defun style-warn (datum &rest args)
-  (warn 'defclass-star-style-warning :format-control datum :format-arguments args))
 
 (defun process-slot-definition (definition)
   (unless (consp definition)
@@ -92,9 +93,10 @@
                                    unless (member el *allowed-slot-definition-properties*)
                                    collect el))
       (when unknown-keywords
-        (style-warn "Unexpected properties in slot definition ~S. The unexpected elements are ~S. ~%~
+        (style-warn "Unexpected properties in slot definition ~S.~%~
+                     The unexpected properties are ~S.~%~
                      To avoid this warning (pushnew your-custom-keyword defclass-star:*allowed-slot-definition-properties*)"
-                    entire-definition definition))
+                    entire-definition unknown-keywords))
       (prog1
           (append (list name)
                   (unless (eq initform 'missing)
