@@ -70,37 +70,59 @@
 (defvar *initarg-name-transformer* 'default-initarg-name-transformer)
 (defvar *automatic-initargs-p* #t)
 
+(defvar *allowed-slot-definition-properties* (list :documentation :type :reader :writer :allocation)
+  "Holds a list of keywords that are allowed in slot definitions (:accessor and :initarg is implicitly included) .")
+
 ;; expand-time temporary dynamic vars
 (defvar *accessor-names*)
 (defvar *slot-names*)
+
+(define-condition defclass-star-style-warning (simple-condition style-warning)
+  ())
+
+(defun style-warn (datum &rest args)
+  (warn 'defclass-star-style-warning :format-control datum :format-arguments args))
 
 (defun process-slot-definition (definition)
   (unless (consp definition)
     (setf definition (list definition)))
   (let ((name (pop definition))
-        (initform 'missing))
+        (initform 'missing)
+        (entire-definition definition))
     (push name *slot-names*)
-    (when definition
+    (when (oddp (length definition))
       (setf initform (pop definition))
+      (setf entire-definition definition)
       (when (eq initform :unbound)
         (setf initform 'missing)))
-    (assert (evenp (length definition)) () "Expecting a valid property list instead of ~S; it's length is odd" definition)
-    (assert (eq (getf definition :initform 'missing) 'missing) () ":initform is not allowed by the syntax")
+    (assert (eq (getf definition :initform 'missing) 'missing) ()
+            ":initform is not allowed by the defclass-star syntax, the initform is taken from the first element of odd length slot definitions.")
+    (assert (every #'keywordp (loop for el :in definition :by #'cddr
+                                    collect el))
+            () "Found non-keywords in ~S" definition)
     (let ((accessor (getf definition :accessor 'missing))
-          (initarg (getf definition :initarg 'missing)))
+          (initarg (getf definition :initarg 'missing))
+          (unknown-keywords))
       (remf-keywords definition :accessor :initform :initarg)
+      (setf unknown-keywords (loop for el :in definition :by #'cddr
+                                   unless (member el *allowed-slot-definition-properties*)
+                                   collect el))
+      (when unknown-keywords
+        (style-warn "Unexpected properties in slot definition ~S. The unexpected elements are ~S. ~%~
+                     To avoid this warning (pushnew your-custom-keyword defclass-star:*allowed-slot-definition-properties*)"
+                    entire-definition definition))
       (prog1
           (append (list name)
                   (unless (eq initform 'missing)
                     (list :initform initform))
                   (if (eq accessor 'missing)
                       (when *automatic-accessors-p*
-                        (setf accessor (funcall *accessor-name-transformer* name definition))
+                        (setf accessor (funcall *accessor-name-transformer* name entire-definition))
                         (list :accessor accessor))
                       (list :accessor accessor))
                   (if (eq initarg 'missing)
                       (when *automatic-initargs-p*
-                        (list :initarg (funcall *initarg-name-transformer* name definition)))
+                        (list :initarg (funcall *initarg-name-transformer* name entire-definition)))
                       (list :initarg initarg))
                   definition)
         (push accessor *accessor-names*)))))
@@ -132,9 +154,9 @@
 (macrolet ((def-star-macro (macro-name expand-to-name)
                `(defmacro ,macro-name (name direct-superclasses direct-slots &rest options)
                  (unless (eq (symbol-package name) *package*)
-                   (warn "defclass* for ~A while its home package is not *package* (~A)"
-                         (let ((*package* (find-package "KEYWORD")))
-                           (format nil "~S" name)) *package*))
+                   (style-warn "defclass* for ~A while its home package is not *package* (~A)"
+                               (let ((*package* (find-package "KEYWORD")))
+                                 (format nil "~S" name)) *package*))
                  (let ((*accessor-names* nil)
                        (*slot-names* nil))
                    (multiple-value-bind (binding-names binding-values clean-options)

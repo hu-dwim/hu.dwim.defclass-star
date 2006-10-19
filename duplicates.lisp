@@ -67,9 +67,19 @@
     (dolist (s string-designators)
       (when s (princ s str)))))
 
-(defmacro remf-keywords (plist &rest keywords)
-  "Creates a copy of PLIST with copy-list and remf's each keyword in KEYWORDS"
-  `(progn
-    (setf ,plist (copy-list ,plist))
-    ,@(loop for el in keywords
-            collect `(remf ,plist ,el))))
+(defun remove-keywords (plist &rest keywords)
+  "Creates a copy of PLIST without the listed KEYWORDS."
+  (declare (optimize (speed 3)))
+  (loop for cell = plist :then (cddr cell)
+        for el = (car cell)
+        while cell
+        unless (member el keywords :test #'eq)
+        collect el
+        and collect (cadr cell)
+        and do (assert (cdr cell) () "Not a proper plist")))
+
+(define-modify-macro remf-keywords (&rest keywords) remove-keywords
+  "Removes the properties identified by KEYWORDS from PLACE.")
+
+
+

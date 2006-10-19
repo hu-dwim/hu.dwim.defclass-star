@@ -42,11 +42,35 @@
   `(is (equal (macroexpand-1 ',macro)
               ',(eval result))))
 
-(defmacro slot= (slotd result)
-  `(is (equal (let ((defclass-star::*accessor-names* nil)
-                    (defclass-star::*slot-names* nil))
-                (defclass-star::process-slot-definition ',slotd))
-             ',result)))
+(defmacro exp-signals (condition-spec class-definitions)
+  `(signals ,condition-spec
+    (macroexpand-1 ',class-definitions)))
+
+(defmacro exp-warns (class-definitions)
+  `(exp-signals warning ,class-definitions))
+
+(defmacro exp-errors (class-definitions)
+  `(exp-signals error ,class-definitions))
+
+(defmacro slot= (slotd result &rest head)
+  (unless head
+    (setf head (list 'is)))
+  `(,@head (equal (let ((defclass-star::*accessor-names* nil)
+                        (defclass-star::*slot-names* nil))
+                    (defclass-star::process-slot-definition ',slotd))
+            ',result)))
+
+(defmacro slot-signals (condition-spec slotd)
+  `(signals ,condition-spec
+    (let ((defclass-star::*accessor-names* nil)
+          (defclass-star::*slot-names* nil))
+      (defclass-star::process-slot-definition ',slotd))))
+
+(defmacro slot-warns (slotd)
+  `(slot-signals warning ,slotd))
+
+(defmacro slot-errors (slotd)
+  `(slot-signals error ,slotd))
 
 (defmacro test* (name &body body)
   `(test ,name
@@ -112,10 +136,7 @@
           ((slot1))
           (:accessor-name-package (find-package '#:defclass-star.test-dummy)))
         (defclass some-class (some super classes)
-          ((slot1 :accessor defclass-star.test-dummy::slot1-of :initarg :slot1))))
-  (signals error (macroexpand-1 '(defclass* some-class (some super classes)
-                                  ((slot1))
-                                  (:accessor-name-transformer too many)))))
+          ((slot1 :accessor defclass-star.test-dummy::slot1-of :initarg :slot1)))))
 
 (test* full
   (exp= (defclass* some-class (some super classes)
@@ -147,3 +168,20 @@
             ((slot1 :initform 42 :accessor slot1-of :initarg :slot1 :documentation "zork")
              (slot2 :accessor slot2-custom :initarg :slot2)))
           (export (list 'some-class 'slot1-of 'slot2-custom 'slot1 'slot2) ,*package*))))
+
+(test* warnings-and-errors
+  (let ((*allowed-slot-definition-properties* *allowed-slot-definition-properties*))
+    (push :asdf *allowed-slot-definition-properties*)
+    (push :unspecified *allowed-slot-definition-properties*)
+    (slot= (slot1 :asdf 42 :unspecified 43)
+           (slot1 :accessor slot1-of :initarg :slot1 :asdf 42 :unspecified 43)))
+  (slot-warns (slot1 :unbound :asdf slot1-custom))
+  (slot-warns (slot1 :asdf slot1-custom))
+  (slot-errors (slot1 :unbound foo bar))
+  (slot-errors (slot1 foo bar))
+
+  (exp-errors (defclass* some-class ()
+                ((slot1))
+                (:accessor-name-transformer 'default-accessor-name-transformer many)))
+  (exp-warns (defclass* defclass-star::some-class ()
+               ())))

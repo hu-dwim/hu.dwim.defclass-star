@@ -32,6 +32,7 @@
    #:default-accessor-name-transformer
    #:default-initarg-name-transformer
    #:make-name-transformer
+   #:*allowed-slot-definition-properties*
    
    ;; more or less public vars (it's discouraged to set them globally)
    #:*accessor-name-transformer*
