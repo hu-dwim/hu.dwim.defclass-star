@@ -27,6 +27,18 @@
 
 (in-package #:defclass-star.system)
 
+(unless (find-system 'asdf-system-connections nil)
+ (when (find-package 'asdf-install)
+   (funcall (read-from-string "asdf-install:install") 'asdf-system-connections)))
+
+(unless (find-system 'asdf-system-connections nil)
+  (error "defclass-star requires asdf-system-connections. See 
+http://www.cliki.net/asdf-system-connections for details and download
+instructions."))
+
+;; now make sure it's loaded
+(operate 'load-op 'asdf-system-connections)
+
 (defsystem :defclass-star
   :version "0.1"
   :author ("Attila Lendvai <attila.lendvai@gmail.com>")
@@ -51,3 +63,9 @@
 
 (defmethod operation-done-p ((op test-op) (system (eql (find-system :defclass-star))))
   nil)
+
+
+(defsystem-connection defclass-star-and-contextl
+  :requires (defclass-star contextl)
+  :components ((:file "contextl-integration")))
+

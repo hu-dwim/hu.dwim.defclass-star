@@ -137,37 +137,38 @@
          :export-slot-names-p *export-slot-names-p*)))
     (values binding-names binding-values (nreverse clean-options))))
 
-(macrolet ((def-star-macro (macro-name expand-to-name)
-               `(defmacro ,macro-name (name direct-superclasses direct-slots &rest options)
-                 (unless (eq (symbol-package name) *package*)
-                   (style-warn "defclass* for ~A while its home package is not *package* (~A)"
-                               (let ((*package* (find-package "KEYWORD")))
-                                 (format nil "~S" name)) *package*))
-                 (let ((*accessor-names* nil)
-                       (*slot-names* nil))
-                   (multiple-value-bind (binding-names binding-values clean-options)
-                       (extract-options-into-bindings options)
-                     (progv binding-names (mapcar #'eval binding-values)
-                       (let ((result `(,',expand-to-name ,name
-                                       ,direct-superclasses
-                                       ,(mapcar 'process-slot-definition direct-slots)
-                                       ,@clean-options)))
-                         (if (or *export-class-name-p*
-                                 *export-accessor-names-p*
-                                 *export-slot-names-p*)
-                             `(progn
-                               ,result
-                               (export (list ,@(mapcar (lambda (el)
-                                                         (list 'quote el))
-                                                       (append (when *export-class-name-p*
-                                                                 (list name))
-                                                               (when *export-accessor-names-p*
-                                                                 (nreverse *accessor-names*))
-                                                               (when *export-slot-names-p*
-                                                                 (nreverse *slot-names*)))))
-                                ,*package*))
-                             result))))))))
-  (def-star-macro defclass* defclass)
-  (def-star-macro defcondition* define-condition))
+(defmacro def-star-macro (macro-name expand-to-name)
+  `(defmacro ,macro-name (name direct-superclasses direct-slots &rest options)
+    (unless (eq (symbol-package name) *package*)
+      (style-warn "defclass* for ~A while its home package is not *package* (~A)"
+                  (let ((*package* (find-package "KEYWORD")))
+                    (format nil "~S" name)) *package*))
+    (let ((*accessor-names* nil)
+          (*slot-names* nil))
+      (multiple-value-bind (binding-names binding-values clean-options)
+          (extract-options-into-bindings options)
+        (progv binding-names (mapcar #'eval binding-values)
+          (let ((result `(,',expand-to-name ,name
+                          ,direct-superclasses
+                          ,(mapcar 'process-slot-definition direct-slots)
+                          ,@clean-options)))
+            (if (or *export-class-name-p*
+                    *export-accessor-names-p*
+                    *export-slot-names-p*)
+                `(progn
+                  ,result
+                  (export (list ,@(mapcar (lambda (el)
+                                            (list 'quote el))
+                                          (append (when *export-class-name-p*
+                                                    (list name))
+                                                  (when *export-accessor-names-p*
+                                                    (nreverse *accessor-names*))
+                                                  (when *export-slot-names-p*
+                                                    (nreverse *slot-names*)))))
+                   ,*package*))
+                result)))))))
+
+(def-star-macro defclass* defclass)
+(def-star-macro defcondition* define-condition)
 
 
