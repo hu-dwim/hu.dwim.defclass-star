@@ -33,7 +33,7 @@
 (defvar *automatic-initargs-p* #t)
 
 (defvar *allowed-slot-definition-properties* '(:documentation :type :reader :writer :allocation
-                                               :compute-as :component :backtrack)
+                                               :computed :component :backtrack)
   "Holds a list of keywords that are allowed in slot definitions (:accessor and :initarg is implicitly included) .")
 
 ;; expand-time temporary dynamic vars
@@ -59,9 +59,10 @@
                (last-char (aref name-string (1- (length name-string)))))
           (cond ((char-equal last-char #\p)
                  name)
-                ((find #\- name-string)
-                 (concatenate-symbol name "-P" package))
-                (t (concatenate-symbol name "P" package))))
+                ;; i like unconditional -p postfix. ymmv.
+                #+nil((not (find #\- name-string))
+                 (concatenate-symbol name "P" package))
+                (t (concatenate-symbol name "-P" package))))
         (concatenate-symbol name "-OF" package))))
 
 (defun default-initarg-name-transformer (name definition)
