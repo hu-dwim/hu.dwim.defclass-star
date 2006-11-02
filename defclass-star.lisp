@@ -86,33 +86,34 @@
     (assert (every #'keywordp (loop for el :in definition :by #'cddr
                                     collect el))
             () "Found non-keywords in ~S" definition)
-    (let ((accessor (getf definition :accessor 'missing))
-          (initarg (getf definition :initarg 'missing))
-          (unknown-keywords))
+    (destructuring-bind (&key (accessor 'missing) (initarg 'missing) &allow-other-keys)
+        definition
       (remf-keywords definition :accessor :initform :initarg)
-      (setf unknown-keywords (loop for el :in definition :by #'cddr
-                                   unless (member el *allowed-slot-definition-properties*)
-                                   collect el))
-      (when unknown-keywords
-        (style-warn "Unexpected properties in slot definition ~S.~%~
-                     The unexpected properties are ~S.~%~
-                     To avoid this warning (pushnew your-custom-keyword defclass-star:*allowed-slot-definition-properties*)"
-                    entire-definition unknown-keywords))
-      (prog1
-          (append (list name)
-                  (unless (eq initform 'missing)
-                    (list :initform initform))
-                  (if (eq accessor 'missing)
-                      (when *automatic-accessors-p*
-                        (setf accessor (funcall *accessor-name-transformer* name entire-definition))
-                        (list :accessor accessor))
-                      (list :accessor accessor))
-                  (if (eq initarg 'missing)
-                      (when *automatic-initargs-p*
-                        (list :initarg (funcall *initarg-name-transformer* name entire-definition)))
-                      (list :initarg initarg))
-                  definition)
-        (push accessor *accessor-names*)))))
+      (let ((unknown-keywords (loop for el :in definition :by #'cddr
+                                    unless (member el *allowed-slot-definition-properties*)
+                                    collect el)))
+        (when unknown-keywords
+          (style-warn "Unexpected properties in slot definition ~S.~%~
+                       The unexpected properties are ~S.~%~
+                       To avoid this warning (pushnew your-custom-keyword defclass-star:*allowed-slot-definition-properties*)"
+                      entire-definition unknown-keywords))
+        (prog1
+            (append (list name)
+                    (unless (eq initform 'missing)
+                      (list :initform initform))
+                    (if (eq accessor 'missing)
+                        (when *automatic-accessors-p*
+                          (setf accessor (funcall *accessor-name-transformer* name entire-definition))
+                          (list :accessor accessor))
+                        (when accessor
+                          (list :accessor accessor)))
+                    (if (eq initarg 'missing)
+                        (when *automatic-initargs-p*
+                          (list :initarg (funcall *initarg-name-transformer* name entire-definition)))
+                        (when initarg
+                          (list :initarg initarg)))
+                    definition)
+          (push accessor *accessor-names*))))))
 
 (defun extract-options-into-bindings (options)
   (let ((binding-names)
