@@ -32,6 +32,8 @@
 (defvar *initarg-name-transformer* 'default-initarg-name-transformer)
 (defvar *automatic-initargs-p* #t)
 
+(defvar *slot-definition-transformer* 'identity)
+
 (defvar *allowed-slot-definition-properties* '(:documentation :type :reader :writer :allocation
                                                :computed :component :backtrack)
   "Holds a list of keywords that are allowed in slot definitions (:accessor and :initarg is implicitly included) .")
@@ -98,21 +100,22 @@
                        To avoid this warning (pushnew your-custom-keyword defclass-star:*allowed-slot-definition-properties*)"
                       entire-definition unknown-keywords))
         (prog1
-            (append (list name)
-                    (unless (eq initform 'missing)
-                      (list :initform initform))
-                    (if (eq accessor 'missing)
-                        (when *automatic-accessors-p*
-                          (setf accessor (funcall *accessor-name-transformer* name entire-definition))
-                          (list :accessor accessor))
-                        (when accessor
-                          (list :accessor accessor)))
-                    (if (eq initarg 'missing)
-                        (when *automatic-initargs-p*
-                          (list :initarg (funcall *initarg-name-transformer* name entire-definition)))
-                        (when initarg
-                          (list :initarg initarg)))
-                    definition)
+            (funcall *slot-definition-transformer*
+                     (append (list name)
+                             (unless (eq initform 'missing)
+                               (list :initform initform))
+                             (if (eq accessor 'missing)
+                                 (when *automatic-accessors-p*
+                                   (setf accessor (funcall *accessor-name-transformer* name entire-definition))
+                                   (list :accessor accessor))
+                                 (when accessor
+                                   (list :accessor accessor)))
+                             (if (eq initarg 'missing)
+                                 (when *automatic-initargs-p*
+                                   (list :initarg (funcall *initarg-name-transformer* name entire-definition)))
+                                 (when initarg
+                                   (list :initarg initarg)))
+                             definition))
           (push accessor *accessor-names*))))))
 
 (defun extract-options-into-bindings (options)
@@ -136,7 +139,8 @@
          :automatic-initargs-p *automatic-initargs-p*
          :export-class-name-p *export-class-name-p*
          :export-accessor-names-p *export-accessor-names-p*
-         :export-slot-names-p *export-slot-names-p*)))
+         :export-slot-names-p *export-slot-names-p*
+         :slot-definition-transformer *slot-definition-transformer*)))
     (values binding-names binding-values (nreverse clean-options))))
 
 (defmacro def-star-macro (macro-name expand-to-name)
