@@ -101,30 +101,33 @@
                        The unexpected properties are ~S.~%~
                        To avoid this warning (pushnew your-custom-keyword defclass-star:*allowed-slot-definition-properties*)"
                       entire-definition unknown-keywords))
-        (prog1
-            (funcall *slot-definition-transformer*
-                     (append (list name)
-                             (unless (eq initform 'missing)
-                               (list :initform initform))
-                             (if (and (eq accessor 'missing)
-                                      (eq reader 'missing)
-                                      (eq writer 'missing))
-                                 (when *automatic-accessors-p*
-                                   (setf accessor (funcall *accessor-name-transformer* name entire-definition))
-                                   (list :accessor accessor))
-                                 (append (when accessor
-                                           (list :accessor accessor))
-                                         (when reader
-                                           (list :reader reader))
-                                         (when writer
-                                           (list :writer writer))))
-                             (if (eq initarg 'missing)
-                                 (when *automatic-initargs-p*
-                                   (list :initarg (funcall *initarg-name-transformer* name entire-definition)))
-                                 (when initarg
-                                   (list :initarg initarg)))
-                             definition))
-          (push accessor *accessor-names*))))))
+        (flet ((provided-p (value)
+                 (and value
+                      (not (eq value 'missing)))))
+          (prog1
+              (funcall *slot-definition-transformer*
+                       (append (list name)
+                               (unless (eq initform 'missing)
+                                 (list :initform initform))
+                               (if (and (eq accessor 'missing)
+                                        (eq reader 'missing)
+                                        (eq writer 'missing))
+                                   (when *automatic-accessors-p*
+                                     (setf accessor (funcall *accessor-name-transformer* name entire-definition))
+                                     (list :accessor accessor))
+                                   (append (when (provided-p accessor)
+                                             (list :accessor accessor))
+                                           (when (provided-p reader)
+                                             (list :reader reader))
+                                           (when (provided-p writer)
+                                             (list :writer writer))))
+                               (if (eq initarg 'missing)
+                                   (when *automatic-initargs-p*
+                                     (list :initarg (funcall *initarg-name-transformer* name entire-definition)))
+                                   (when initarg
+                                     (list :initarg initarg)))
+                               definition))
+            (push accessor *accessor-names*)))))))
 
 (defun extract-options-into-bindings (options)
   (let ((binding-names)
