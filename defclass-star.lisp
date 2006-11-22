@@ -172,7 +172,7 @@
             (if (or *export-class-name-p*
                     *export-accessor-names-p*
                     *export-slot-names-p*)
-                `(progn
+                `(prog1
                   ,result
                   (export (list ,@(mapcar (lambda (el)
                                             (list 'quote el))
