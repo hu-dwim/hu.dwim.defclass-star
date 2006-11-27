@@ -15,6 +15,7 @@
    
    #:default-accessor-name-transformer
    #:default-initarg-name-transformer
+   #:default-slot-definition-transformer
    #:make-name-transformer
    #:*allowed-slot-definition-properties*
    

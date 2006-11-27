@@ -32,7 +32,16 @@
 (defvar *initarg-name-transformer* 'default-initarg-name-transformer)
 (defvar *automatic-initargs-p* #t)
 
-(defvar *slot-definition-transformer* 'identity)
+(defvar *slot-definition-transformer* 'default-slot-definition-transformer)
+
+(defun default-slot-definition-transformer (slot-def)
+  "Converts illegal (list foo) :type declarations into simple list declarations."
+  (let ((name (pop slot-def))
+        (type (getf slot-def :type)))
+    (when (and type (listp type) (eq (first type) 'list))
+      (setf (getf slot-def :type) 'list))
+    (push name slot-def)
+    slot-def))
 
 (defvar *allowed-slot-definition-properties* '(:documentation :type :reader :writer :allocation
                                                :computed :component :backtrack)
