@@ -181,7 +181,7 @@
             (if (or *export-class-name-p*
                     *export-accessor-names-p*
                     *export-slot-names-p*)
-                `(prog1
+                `(progn
                   ,result
                   (export (list ,@(mapcar (lambda (el)
                                             (list 'quote el))
@@ -191,10 +191,9 @@
                                                     (nreverse *accessor-names*))
                                                   (when *export-slot-names-p*
                                                     (nreverse *slot-names*)))))
-                   ,*package*))
+                   ,*package*)
+                  (find-class ',name nil))
                 result)))))))
 
 (def-star-macro defclass* defclass)
 (def-star-macro defcondition* define-condition)
-
-
