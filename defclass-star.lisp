@@ -137,7 +137,12 @@
                                    (when initarg
                                      (list :initarg initarg)))
                                definition))
-            (push accessor *accessor-names*)))))))
+            (when (provided-p accessor)
+              (pushnew accessor *accessor-names*))
+            (when (provided-p reader)
+              (pushnew reader *accessor-names*))
+            (when (provided-p writer)
+              (pushnew (second writer) *accessor-names*))))))))
 
 (defun extract-options-into-bindings (options)
   (let ((binding-names)
