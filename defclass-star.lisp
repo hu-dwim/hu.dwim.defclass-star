@@ -103,7 +103,8 @@
         definition
       (remf-keywords definition :accessor :reader :writer :initform :initarg)
       (let ((unknown-keywords (loop for el :in definition :by #'cddr
-                                    unless (member el *allowed-slot-definition-properties*)
+                                    unless (or (member t *allowed-slot-definition-properties*)
+                                               (member el *allowed-slot-definition-properties*))
                                     collect el)))
         (when unknown-keywords
           (style-warn "Unexpected properties in slot definition ~S.~%~
