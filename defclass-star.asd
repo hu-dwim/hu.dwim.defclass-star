@@ -43,8 +43,8 @@ instructions."))
   :version "0.1"
   :author ("Attila Lendvai <attila.lendvai@gmail.com>")
   :maintainer ("Attila Lendvai <attila.lendvai@gmail.com>")
-  :licence "Public Domain / 0-clause MIT"
-  :description "A defclass* to simplify life."
+  :licence "Public Domain / BSD"
+  :description "defclass* and friends to simplify life."
   :components
   ((:file "package")
    (:file "duplicates" :depends-on ("package"))
@@ -53,13 +53,21 @@ instructions."))
 
 (defsystem #:defclass-star.test
   :description "Tests for the defclass-star system."
-  :depends-on (:defclass-star :fiveam)
+  :depends-on (:defclass-star :stefil)
   :components
   ((:file "test")))
 
 (defmethod perform ((op test-op) (system (eql (find-system :defclass-star))))
   (operate 'load-op '#:defclass-star.test)
-  (funcall (read-from-string "5am:run!")))
+  (in-package #:defclass-star.test)
+  (eval (read-from-string "(defclass-star::enable-sharp-boolean-syntax)"))
+  (declaim (optimize (debug 3)))
+  (warn "Enabled the #t/#f syntax in the repl thread and set (declaim (optimize (debug 3))) for easy C-c C-c'ing")
+  (format t "The result of (defclass-star.test::defclass-star-tests) is:~%~%  ~A~%~%~
+             For more details run from the repl and use the customized Slime inspector to inspect the results.~%~
+             See http://common-lisp.net/project/stefil/ for more details about the tests.~%"
+          (funcall (read-from-string "defclass-star.test::defclass-star-tests")))
+  (values))
 
 (defmethod operation-done-p ((op test-op) (system (eql (find-system :defclass-star))))
   nil)

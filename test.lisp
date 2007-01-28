@@ -7,16 +7,21 @@
 (in-package #:defclass-star.system)
 
 (defpackage #:defclass-star.test
-  (:use :cl :defclass-star :5am))
+  (:use :cl :defclass-star :stefil)
+  (:nicknames #:dcs-test))
 
-(defpackage #:defclass-star.test-dummy
-  (:use :cl :defclass-star :5am))
+(defpackage #:defclass-star.test-dummy)
+
+(in-package :defclass-star)
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (import
+   '(*export-class-name-p* *export-slot-names-p* *export-accessor-names-p*)
+   (find-package '#:defclass-star.test)))
 
 (in-package #:defclass-star.test)
 
-(def-suite :defclass-star :description "defclass* tests")
-
-(in-suite :defclass-star)
+(defsuite* defclass-star-tests :description "defclass* tests")
 
 (defmacro exp= (macro result)
   `(is (equal (macroexpand-1 ',macro)
@@ -56,18 +61,18 @@
 (defmacro slot-errors (slotd)
   `(slot-signals error ,slotd))
 
-(defmacro test* (name &body body)
-  `(test ,name
+(defmacro deftest* (name args &body body)
+  `(deftest ,name ,args
     (let ((*automatic-accessors-p* t)
           (*accessor-name-transformer* 'default-accessor-name-transformer)
           (*automatic-initargs-p* t)
           (*initarg-name-transformer* 'default-initarg-name-transformer)
-          (defclass-star::*export-class-name-p* nil)
-          (defclass-star::*export-accessor-names-p* nil)
-          (defclass-star::*export-slot-names-p* nil))
+          (*export-class-name-p* nil)
+          (*export-accessor-names-p* nil)
+          (*export-slot-names-p* nil))
       ,@body)))
 
-(test* nop
+(deftest* nop ()
   (exp= (defclass* some-class (some super classes)
           ()
           (1 2)
@@ -86,13 +91,13 @@
           (1 2)
           (3 4))))
 
-(test* accessors
+(deftest* accessors ()
   (slot= (slot1 :unbound :accessor slot1-custom :initarg slot1-custom)
          (slot1 :accessor slot1-custom :initarg slot1-custom))
   (slot= (slot1)
          (slot1 :accessor slot1-of :initarg :slot1))
   (slot= (slot1 :unbound :type boolean)
-         (slot1 :accessor slot1p :initarg :slot1 :type boolean))
+         (slot1 :accessor slot1-p :initarg :slot1 :type boolean))
   (slot= (slotp :unbound :type boolean)
          (slotp :accessor slotp :initarg :slotp :type boolean))
   (slot= (slot-name :unbound :type boolean)
@@ -106,7 +111,7 @@
     (slot= (slot1)
            (slot1 :accessor foo-slot1-bar :initarg baz-slot1))))
 
-(test* reconfiguration
+(deftest* reconfiguration ()
   (exp= (defclass* some-class (some super classes)
           ((slot1))
           (1 2)
@@ -122,7 +127,7 @@
         (defclass some-class (some super classes)
           ((slot1 :accessor defclass-star.test-dummy::slot1-of :initarg :slot1)))))
 
-(test* full
+(deftest* full ()
   (exp= (defclass* some-class (some super classes)
           ((slot1 :unbound :documentation "zork"))
           (1 2)
@@ -151,9 +156,10 @@
           (defclass some-class (some super classes)
             ((slot1 :initform 42 :accessor slot1-of :initarg :slot1 :documentation "zork")
              (slot2 :accessor slot2-custom :initarg :slot2)))
-          (export (list 'some-class 'slot1-of 'slot2-custom 'slot1 'slot2) ,*package*))))
+          (export (list 'some-class 'slot1-of 'slot2-custom 'slot1 'slot2) ,*package*)
+          (find-class 'some-class nil))))
 
-(test* warnings-and-errors
+(deftest* warnings-and-errors ()
   (let ((*allowed-slot-definition-properties* *allowed-slot-definition-properties*))
     (push :asdf *allowed-slot-definition-properties*)
     (push :unspecified *allowed-slot-definition-properties*)
