@@ -77,3 +77,7 @@ instructions."))
   :requires (defclass-star contextl)
   :components ((:file "contextl-integration")))
 
+(defsystem-connection defclass-star-and-ucw
+  :requires (defclass-star ucw)
+  :components ((:file "ucw-integration")))
+

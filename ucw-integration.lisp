@@ -6,8 +6,8 @@
 
 (in-package :defclass-star)
 
-(def-star-macro deflayer* contextl:deflayer)
-(export 'deflayer* :defclass-star)
-(import 'deflayer* :contextl)
-(export 'deflayer* :contextl)
+(def-star-macro defcomponent* ucw:defcomponent)
+(export 'defcomponent* :defclass-star)
+(import 'defcomponent* :ucw)
+(export 'defcomponent* :ucw)
 

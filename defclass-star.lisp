@@ -109,7 +109,7 @@
         (when unknown-keywords
           (style-warn "Unexpected properties in slot definition ~S.~%~
                        The unexpected properties are ~S.~%~
-                       To avoid this warning (pushnew your-custom-keyword defclass-star:*allowed-slot-definition-properties*)"
+                       To avoid this warning (pushnew (or T :your-custom-keyword) defclass-star:*allowed-slot-definition-properties*)"
                       entire-definition unknown-keywords))
         (flet ((provided-p (value)
                  (and value
