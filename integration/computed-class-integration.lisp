@@ -10,7 +10,7 @@
   `(defclass-star:defclass* ,name ,superclasses
     ,slots
     ,@(append (unless (find :metaclass options :key 'first)
-                '((:metaclass computed-class)))
+                '((:metaclass computed-class:computed-class)))
               options)))
 
 (integrated-export 'defcclass* :computed-class)
