@@ -7,7 +7,7 @@
 (in-package :defclass-star)
 
 (def-star-macro deflayer* contextl:deflayer)
-(export 'deflayer* :defclass-star)
-(import 'deflayer* :contextl)
-(export 'deflayer* :contextl)
+
+(integrated-export 'deflayer* :contextl)
+
 

@@ -22,22 +22,19 @@
 
 (in-package :cl-user)
 
+;;; try to load asdf-system-connections
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (unless (asdf:find-system :asdf-system-connections nil)
+    (when (find-package :asdf-install)
+      (eval (read-from-string "(asdf-install:install '#:asdf-system-connections)")))
+    (unless (asdf:find-system :asdf-system-connections nil)
+      (error "The defclass-star system requires asdf-system-connections. See http://www.cliki.net/asdf-system-connections for details and download instructions.")))
+  (asdf:operate 'asdf:load-op :asdf-system-connections))
+
 (defpackage #:defclass-star.system
-  (:use :cl :asdf))
+    (:use :cl :asdf :asdf-system-connections))
 
 (in-package #:defclass-star.system)
-
-(unless (find-system 'asdf-system-connections nil)
- (when (find-package 'asdf-install)
-   (funcall (read-from-string "asdf-install:install") 'asdf-system-connections)))
-
-(unless (find-system 'asdf-system-connections nil)
-  (error "defclass-star requires asdf-system-connections. See 
-http://www.cliki.net/asdf-system-connections for details and download
-instructions."))
-
-;; now make sure it's loaded
-(operate 'load-op 'asdf-system-connections)
 
 (defsystem :defclass-star
   :version "0.1"
@@ -74,10 +71,17 @@ instructions."))
 
 
 (defsystem-connection defclass-star-and-contextl
-  :requires (defclass-star contextl)
-  :components ((:file "contextl-integration")))
+  :requires (:defclass-star :contextl)
+  :components ((:module :integration
+                        :components ((:file "contextl-integration")))))
 
 (defsystem-connection defclass-star-and-ucw
-  :requires (defclass-star ucw)
-  :components ((:file "ucw-integration")))
+  :requires (:defclass-star :ucw)
+  :components ((:module :integration
+                        :components ((:file "ucw-integration")))))
+
+(defsystem-connection defclass-star-and-computed-class
+  :requires (:defclass-star :computed-class)
+  :components ((:module :integration
+                        :components ((:file "computed-class-integration")))))
 

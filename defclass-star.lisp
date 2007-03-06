@@ -43,9 +43,8 @@
     (push name slot-def)
     slot-def))
 
-(defvar *allowed-slot-definition-properties* '(:documentation :type :reader :writer :allocation
-                                               :computed-in :component :backtrack)
-  "Holds a list of keywords that are allowed in slot definitions (:accessor and :initarg is implicitly included) .")
+(defvar *allowed-slot-definition-properties* '(:documentation :type :reader :writer :allocation)
+  "Holds a list of keywords that are allowed in slot definitions (:accessor and :initarg are implicitly included).")
 
 ;; expand-time temporary dynamic vars
 (defvar *accessor-names*)

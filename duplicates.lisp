@@ -66,4 +66,7 @@
   "Removes the properties identified by KEYWORDS from PLACE.")
 
 
-
+(defun integrated-export (symbol other-package)
+  (export symbol (symbol-package symbol))
+  (import symbol other-package)
+  (export symbol other-package))
