@@ -15,5 +15,5 @@
 
 (integrated-export 'defcclass* :computed-class)
 
-(push :computed-in *allowed-slot-definition-properties*)
-(push :compute-as *allowed-slot-definition-properties*)
+(pushnew :computed-in *allowed-slot-definition-properties*)
+(pushnew :compute-as *allowed-slot-definition-properties*)

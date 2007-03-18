@@ -10,5 +10,5 @@
 
 (integrated-export 'defcomponent* :ucw)
 
-(push :component *allowed-slot-definition-properties*)
-(push :backtrack *allowed-slot-definition-properties*)
+(pushnew :component *allowed-slot-definition-properties*)
+(pushnew :backtrack *allowed-slot-definition-properties*)
