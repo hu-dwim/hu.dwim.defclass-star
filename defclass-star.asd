@@ -85,3 +85,7 @@
   :components ((:module :integration
                         :components ((:file "computed-class-integration")))))
 
+(defsystem-connection defclass-star-and-metabang-bind
+  :requires (:defclass-star :metabang-bind)
+  :components ((:module :integration
+                        :components ((:file "metabang-bind-integration")))))
