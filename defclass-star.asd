@@ -60,10 +60,7 @@
   (eval (read-from-string "(defclass-star::enable-sharp-boolean-syntax)"))
   (declaim (optimize (debug 3)))
   (warn "Enabled the #t/#f syntax in the repl thread and set (declaim (optimize (debug 3))) for easy C-c C-c'ing")
-  (format t "The result of (defclass-star.test::defclass-star-tests) is:~%~%  ~A~%~%~
-             For more details run from the repl and use the customized Slime inspector to inspect the results.~%~
-             See http://common-lisp.net/project/stefil/ for more details about the tests.~%"
-          (funcall (read-from-string "defclass-star.test::defclass-star-tests")))
+  (eval (read-from-string "(stefil:funcall-test-with-feedback-message 'test)"))
   (values))
 
 (defmethod operation-done-p ((op test-op) (system (eql (find-system :defclass-star))))
