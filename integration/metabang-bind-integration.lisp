@@ -6,8 +6,13 @@
 
 (in-package :defclass-star)
 
-(when (member metabang.bind:*defclass-macro-name-for-dynamic-context*
-              `(common-lisp:defclass ,(ignore-errors (read-from-string "metatilities:defclass*"))))
-  (setf metabang.bind:*defclass-macro-name-for-dynamic-context* 'defclass-star:defclass*)
-  (warn "metabang.bind:*defclass-macro-name-for-dynamic-context* has been set to 'defclass-star:defclass*"))
+(defmacro define-dynamic-context* (name direct-slots &rest args
+                                        &key (defclass-macro-name 'defclass*)
+                                        &allow-other-keys)
+  (remf-keywords args :defclass-macro-name)
+  `(metabang.bind:define-dynamic-context ,name ,direct-slots
+    :defclass-macro-name ,defclass-macro-name
+    ,@args))
+
+(integrated-export 'define-dynamic-context* :metabang-bind)
 
