@@ -57,9 +57,8 @@
 (defmethod perform ((op test-op) (system (eql (find-system :defclass-star))))
   (operate 'load-op '#:defclass-star.test)
   (in-package #:defclass-star.test)
-  (eval (read-from-string "(defclass-star::enable-sharp-boolean-syntax)"))
   (declaim (optimize (debug 3)))
-  (warn "Enabled the #t/#f syntax in the repl thread and set (declaim (optimize (debug 3))) for easy C-c C-c'ing")
+  (warn "(declaim (optimize (debug 3))) was issued to help later C-c C-c'ing")
   (eval (read-from-string "(stefil:funcall-test-with-feedback-message 'test)"))
   (values))
 
