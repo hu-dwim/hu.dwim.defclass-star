@@ -10,4 +10,4 @@
 
 (integrated-export 'deflayer* :contextl)
 
-
+(pushnew :special *allowed-slot-definition-properties*)
