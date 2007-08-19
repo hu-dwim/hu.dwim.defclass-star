@@ -15,5 +15,6 @@
 
 (integrated-export 'defcclass* :computed-class)
 
-(pushnew :computed-in *allowed-slot-definition-properties*)
-(pushnew :compute-as *allowed-slot-definition-properties*)
+(mapc (lambda (option)
+        (pushnew option *allowed-slot-definition-properties*))
+      '(:computed-in :compute-as :slot-value-function :setf-slot-value-function))
