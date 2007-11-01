@@ -6,7 +6,13 @@
 
 (in-package :defclass-star)
 
-(def-star-macro defcomponent* ucw:defcomponent)
+(defmacro defcomponent* (name supers slots &rest options)
+  (build-defclass-like-expansion
+   name supers slots options
+   (lambda (processed-slots clean-options)
+     `(ucw:defcomponent ,name ,supers
+        ,processed-slots
+        ,@clean-options))))
 
 (integrated-export 'defcomponent* :ucw)
 

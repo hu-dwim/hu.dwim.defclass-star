@@ -6,7 +6,13 @@
 
 (in-package :defclass-star)
 
-(def-star-macro deflayer* contextl:deflayer)
+(defmacro deflayer* (name supers slots &rest options)
+  (build-defclass-like-expansion
+   name supers slots options
+   (lambda (processed-slots clean-options)
+     `(contextl:deflayer ,name ,supers
+        ,processed-slots
+        ,@clean-options))))
 
 (integrated-export 'deflayer* :contextl)
 
