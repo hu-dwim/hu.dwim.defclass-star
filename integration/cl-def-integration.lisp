@@ -10,15 +10,17 @@
   (use-package :cl-def :defclass-star))
 
 ;; TODO this is too much like build-defclass-like-expansion, factor out
-(def (definer :available-flags "eas") class* (name supers slots &rest options)
+(defun build-defclass-like-cl-def-expansion (name supers slots class-options -options-
+                                             expansion-builder)
+  (declare (ignore supers))
   (unless (eq (symbol-package name) *package*)
     (style-warn "def class* for ~A while its home package is not *package* (~A)"
                 (let ((*package* (find-package "KEYWORD")))
                   (format nil "~S" name)) *package*))
   (let ((*accessor-names* nil)
         (*slot-names* nil))
-    (multiple-value-bind (binding-names binding-values clean-options)
-        (extract-options-into-bindings options)
+    (multiple-value-bind (binding-names binding-values clean-class-options)
+        (extract-options-into-bindings class-options)
       (progv binding-names (mapcar #'eval binding-values)
         (let* ((*export-class-name-p* (getf -options- :export
                                             *export-class-name-p*))
@@ -26,9 +28,9 @@
                                                 *export-accessor-names-p*))
                (*export-slot-names-p* (getf -options- :export-slot-names
                                             *export-slot-names-p*))
-               (result `(defclass ,name ,supers
-                          ,(mapcar 'process-slot-definition slots)
-                          ,@clean-options)))
+               (result (funcall expansion-builder
+                                (mapcar 'process-slot-definition slots)
+                                clean-class-options)))
           (if (or *export-class-name-p*
                   *export-accessor-names-p*
                   *export-slot-names-p*)
@@ -46,6 +48,14 @@
                            ,*package*))
                  (find-class ',name nil))
               result))))))
+
+(def (definer :available-flags "eas") class* (name supers slots &rest class-options)
+  (build-defclass-like-cl-def-expansion
+   name supers slots class-options -options-
+   (lambda (processed-slots clean-options)
+     `(defclass ,name ,supers
+        ,processed-slots
+        ,@clean-options))))
 
 (integrated-export 'class* :cl-def)
 
