@@ -14,7 +14,16 @@
         ,processed-slots
         ,@clean-options))))
 
+(def (definer :available-flags "eas") component* (name supers slots &rest class-options)
+  (build-defclass-like-cl-def-expansion
+   name supers slots class-options -options-
+   (lambda (processed-slots clean-options)
+     `(ucw:defcomponent ,name ,supers
+        ,processed-slots
+        ,@clean-options))))
+
 (integrated-export 'defcomponent* :ucw)
+(integrated-export 'component* :ucw)
 
 (pushnew :component *allowed-slot-definition-properties*)
 (pushnew :backtrack *allowed-slot-definition-properties*)
