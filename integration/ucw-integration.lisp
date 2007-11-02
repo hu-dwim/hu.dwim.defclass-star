@@ -6,6 +6,9 @@
 
 (in-package :defclass-star)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (use-package :cl-def))
+
 (defmacro defcomponent* (name supers slots &rest options)
   (build-defclass-like-expansion
    name supers slots options
