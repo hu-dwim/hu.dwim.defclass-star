@@ -9,7 +9,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (use-package :cl-def :defclass-star))
 
-;; TODO this is too much like build-defclass-like-expansion, factor out
+;; TODO this is too similar to build-defclass-like-expansion, factor out
 (defun build-defclass-like-cl-def-expansion (name supers slots class-options -options-
                                              expansion-builder)
   (declare (ignore supers))
@@ -57,7 +57,16 @@
         ,processed-slots
         ,@clean-options))))
 
+(def (definer :available-flags "eas") condition* (name supers slots &rest class-options)
+  (build-defclass-like-cl-def-expansion
+   name supers slots class-options -options-
+   (lambda (processed-slots clean-options)
+     `(define-condition ,name ,supers
+        ,processed-slots
+        ,@clean-options))))
+
 (integrated-export 'class* :cl-def)
+(integrated-export 'condition* :cl-def)
 
 #|
 
