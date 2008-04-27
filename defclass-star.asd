@@ -24,12 +24,15 @@
 
 ;;; try to load asdf-system-connections
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (asdf:find-system :asdf-system-connections nil)
-    (when (find-package :asdf-install)
-      (eval (read-from-string "(asdf-install:install '#:asdf-system-connections)")))
-    (unless (asdf:find-system :asdf-system-connections nil)
-      (error "The defclass-star system requires asdf-system-connections. See http://www.cliki.net/asdf-system-connections for details and download instructions.")))
-  (asdf:operate 'asdf:load-op :asdf-system-connections))
+  (flet ((try (system)
+           (unless (asdf:find-system system nil)
+             (warn "Trying to install required dependency: ~S" system)
+             (when (find-package :asdf-install)
+               (funcall (read-from-string "asdf-install:install") system))
+             (unless (asdf:find-system system nil)
+               (error "The ~A system requires ~A." (or *compile-file-pathname* *load-pathname*) system)))
+           (asdf:operate 'asdf:load-op system)))
+    (try :asdf-system-connections)))
 
 (defpackage #:defclass-star.system
     (:use :cl :asdf :asdf-system-connections))
@@ -65,6 +68,10 @@
 (defmethod operation-done-p ((op test-op) (system (eql (find-system :defclass-star))))
   nil)
 
+(defsystem-connection defclass-star-and-swank
+  :requires (:defclass-star :swank)
+  :components ((:module :integration
+                        :components ((:file "swank-integration")))))
 
 (defsystem-connection defclass-star-and-contextl
   :requires (:defclass-star :contextl)

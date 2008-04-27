@@ -8,14 +8,6 @@
 
 (enable-sharp-boolean-syntax)
 
-;; set up swank:*readtable-alist*
-#+#.(cl:when (cl:find-package "SWANK") '(:and))
-(unless (assoc "DEFCLASS-STAR" swank:*readtable-alist* :test #'string=)
-  (let ((*readtable* (copy-readtable)))
-    (enable-sharp-boolean-syntax)
-    (push (cons "DEFCLASS-STAR" *readtable*) swank:*readtable-alist*)
-    (push (cons "DEFCLASS-STAR.TEST" *readtable*) swank:*readtable-alist*)))
-
 (defmacro make-name-transformer (&rest elements)
   `(lambda (name definition)
     (declare (ignorable definition))
