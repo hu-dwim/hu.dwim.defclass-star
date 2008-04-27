@@ -37,15 +37,13 @@
               `(progn
                  ,result
                  (eval-when (:compile-toplevel :load-toplevel :execute)
-                   (export (list ,@(mapcar (lambda (el)
-                                             (list 'quote el))
-                                           (append (when *export-class-name-p*
-                                                     (list name))
-                                                   (when *export-accessor-names-p*
-                                                     (nreverse *accessor-names*))
-                                                   (when *export-slot-names-p*
-                                                     (nreverse *slot-names*)))))
-                           ,*package*))
+                   (export '(,@(append (when *export-class-name-p*
+                                         (list name))
+                                       (when *export-accessor-names-p*
+                                         (nreverse *accessor-names*))
+                                       (when *export-slot-names-p*
+                                         (nreverse *slot-names*))))
+                           ,(package-name *package*)))
                  (find-class ',name nil))
               result))))))
 
