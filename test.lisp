@@ -159,7 +159,7 @@
             ((slot1 :initform 42 :accessor slot1-of :initarg :slot1 :documentation "zork")
              (slot2 :accessor slot2-custom :initarg :slot2)))
           (eval-when (:compile-toplevel :load-toplevel :execute)
-           (export (list 'some-class 'slot1-of 'slot2-custom 'slot1 'slot2) ,*package*))
+            (export '(some-class slot1-of slot2-custom slot1 slot2) ,(package-name *package*)))
           (find-class 'some-class nil))))
 
 (deftest* warnings-and-errors ()
