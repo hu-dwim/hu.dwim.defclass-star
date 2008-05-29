@@ -195,16 +195,16 @@
                   (format nil "~S" name)) *package*))
   (let ((*accessor-names* nil)
         (*slot-names* nil)
-        (*symbols-to-export* nil))
+        (*symbols-to-export* nil)
+        (*export-class-name-p* export-class-name)
+        (*export-accessor-names-p* export-accessor-names)
+        (*export-slot-names-p* export-slot-names))
     (multiple-value-bind (binding-names binding-values clean-options)
         (extract-options-into-bindings options)
       (progv binding-names (mapcar #'eval binding-values)
-        (let* ((*export-class-name-p* export-class-name)
-               (*export-accessor-names-p* export-accessor-names)
-               (*export-slot-names-p* export-slot-names)
-               (result (funcall expansion-builder
-                                (mapcar 'process-slot-definition slots)
-                                clean-options)))
+        (let ((result (funcall expansion-builder
+                               (mapcar 'process-slot-definition slots)
+                               clean-options)))
           (if (or *symbols-to-export*
                   *export-class-name-p*
                   *export-accessor-names-p*
