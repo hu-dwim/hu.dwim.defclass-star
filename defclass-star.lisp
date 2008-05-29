@@ -147,12 +147,16 @@
             (when (provided-p export)
               (ecase export
                 (:accessor
-                 (push accessor *symbols-to-export*))
+                 (when accessor
+                   (push accessor *symbols-to-export*)))
                 ((:slot :name :slot-name)
-                 (push name *symbols-to-export*))
+                 (when name
+                   (push name *symbols-to-export*)))
                 ((t)
-                 (push accessor *symbols-to-export*)
-                 (push name *symbols-to-export*))))))))))
+                 (when accessor
+                   (push accessor *symbols-to-export*))
+                 (when name
+                   (push name *symbols-to-export*)))))))))))
 
 (defun extract-options-into-bindings (options)
   (let ((binding-names)
