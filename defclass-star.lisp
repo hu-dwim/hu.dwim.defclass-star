@@ -43,12 +43,13 @@
     (push name slot-def)
     slot-def))
 
-(defvar *allowed-slot-definition-properties* '(:documentation :type :reader :writer :allocation)
+(defvar *allowed-slot-definition-properties* '(:documentation :type :reader :writer :allocation :export)
   "Holds a list of keywords that are allowed in slot definitions (:accessor and :initarg are implicitly included).")
 
 ;; expand-time temporary dynamic vars
 (defvar *accessor-names*)
 (defvar *slot-names*)
+(defvar *symbols-to-export*)
 
 (define-condition defclass-star-style-warning (simple-condition style-warning)
   ())
@@ -98,9 +99,10 @@
             () "Found non-keywords in ~S" definition)
     (destructuring-bind (&key (accessor 'missing) (initarg 'missing)
                               (reader 'missing) (writer 'missing)
+                              (export 'missing)
                               &allow-other-keys)
         definition
-      (remf-keywords definition :accessor :reader :writer :initform :initarg)
+      (remf-keywords definition :accessor :reader :writer :initform :initarg :export)
       (let ((unknown-keywords (loop for el :in definition :by #'cddr
                                     unless (or (member t *allowed-slot-definition-properties*)
                                                (member el *allowed-slot-definition-properties*))
@@ -141,7 +143,16 @@
             (when (provided-p reader)
               (pushnew reader *accessor-names*))
             (when (provided-p writer)
-              (pushnew (second writer) *accessor-names*))))))))
+              (pushnew (second writer) *accessor-names*))
+            (when (provided-p export)
+              (ecase export
+                (:accessor
+                 (push accessor *symbols-to-export*))
+                ((:slot :name :slot-name)
+                 (push name *symbols-to-export*))
+                ((t)
+                 (push accessor *symbols-to-export*)
+                 (push name *symbols-to-export*))))))))))
 
 (defun extract-options-into-bindings (options)
   (let ((binding-names)
@@ -175,14 +186,16 @@
                 (let ((*package* (find-package "KEYWORD")))
                   (format nil "~S" name)) *package*))
   (let ((*accessor-names* nil)
-        (*slot-names* nil))
+        (*slot-names* nil)
+        (*symbols-to-export* nil))
     (multiple-value-bind (binding-names binding-values clean-options)
         (extract-options-into-bindings options)
       (progv binding-names (mapcar #'eval binding-values)
         (let ((result (funcall expansion-builder
                                (mapcar 'process-slot-definition slots)
                                clean-options)))
-          (if (or *export-class-name-p*
+          (if (or *symbols-to-export*
+                  *export-class-name-p*
                   *export-accessor-names-p*
                   *export-slot-names-p*)
               `(progn
@@ -193,7 +206,8 @@
                                        (when *export-accessor-names-p*
                                          (nreverse *accessor-names*))
                                        (when *export-slot-names-p*
-                                         (nreverse *slot-names*))))
+                                         (nreverse *slot-names*))
+                                       *symbols-to-export*))
                            ,(package-name *package*)))
                  (find-class ',name nil))
               result))))))
