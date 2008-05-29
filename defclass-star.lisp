@@ -183,7 +183,11 @@
          :slot-definition-transformer *slot-definition-transformer*)))
     (values binding-names binding-values (nreverse clean-options))))
 
-(defun build-defclass-like-expansion (name supers slots options expansion-builder)
+(defun build-defclass-like-expansion (name supers slots options expansion-builder
+                                      &key
+                                      (export-class-name *export-class-name-p*)
+                                      (export-accessor-names *export-accessor-names-p*)
+                                      (export-slot-names *export-slot-names-p*))
   (declare (ignore supers))
   (unless (eq (symbol-package name) *package*)
     (style-warn "defclass* for ~A while its home package is not *package* (~A)"
@@ -195,9 +199,12 @@
     (multiple-value-bind (binding-names binding-values clean-options)
         (extract-options-into-bindings options)
       (progv binding-names (mapcar #'eval binding-values)
-        (let ((result (funcall expansion-builder
-                               (mapcar 'process-slot-definition slots)
-                               clean-options)))
+        (let* ((*export-class-name-p* export-class-name)
+               (*export-accessor-names-p* export-accessor-names)
+               (*export-slot-names-p* export-slot-names)
+               (result (funcall expansion-builder
+                                (mapcar 'process-slot-definition slots)
+                                clean-options)))
           (if (or *symbols-to-export*
                   *export-class-name-p*
                   *export-accessor-names-p*
