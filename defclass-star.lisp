@@ -70,6 +70,9 @@
                (last-char (aref name-string (1- (length name-string)))))
           (cond ((char-equal last-char #\p)
                  name)
+                ((char= #\? (elt name-string (1- (length name-string))))
+                 ;; leave it alone if it's a foo?
+                 name)
                 ;; i like unconditional -p postfix. ymmv.
                 #+nil((not (find #\- name-string))
                  (concatenate-symbol name "P" package))
