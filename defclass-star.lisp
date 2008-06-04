@@ -83,12 +83,19 @@
   (declare (ignorable definition))
   (concatenate-symbol name #.(symbol-package :asdf)))
 
+(defun fully-qualified-symbol-name (symbol)
+  (let ((*package* #.(find-package "KEYWORD")))
+    (format nil "~S" symbol)))
+
 (defun process-slot-definition (definition)
   (unless (consp definition)
     (setf definition (list definition)))
   (let ((name (pop definition))
         (initform 'missing)
         (entire-definition definition))
+    (unless (eq (symbol-package name) *package*)
+      (style-warn "defclass* for a slot name ~A while its home package is not *package* (~A). Default generated names will be interned into *package*!"
+                  (fully-qualified-symbol-name name) *package*))
     (push name *slot-names*)
     (when (oddp (length definition))
       (setf initform (pop definition))
@@ -194,8 +201,7 @@
   (declare (ignore supers))
   (unless (eq (symbol-package name) *package*)
     (style-warn "defclass* for ~A while its home package is not *package* (~A)"
-                (let ((*package* (find-package "KEYWORD")))
-                  (format nil "~S" name)) *package*))
+                (fully-qualified-symbol-name name) *package*))
   (let ((*accessor-names* nil)
         (*slot-names* nil)
         (*symbols-to-export* nil)
