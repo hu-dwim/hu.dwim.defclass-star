@@ -93,9 +93,6 @@
   (let ((name (pop definition))
         (initform 'missing)
         (entire-definition definition))
-    (unless (eq (symbol-package name) *package*)
-      (style-warn "defclass* for a slot name ~A while its home package is not *package* (~A). Default generated names will be interned into *package*!"
-                  (fully-qualified-symbol-name name) *package*))
     (push name *slot-names*)
     (when (oddp (length definition))
       (setf initform (pop definition))
@@ -116,7 +113,8 @@
       (let ((unknown-keywords (loop for el :in definition :by #'cddr
                                     unless (or (member t *allowed-slot-definition-properties*)
                                                (member el *allowed-slot-definition-properties*))
-                                    collect el)))
+                                    collect el))
+            (slot-name-warning-triggered? #f))
         (when unknown-keywords
           (style-warn "Unexpected properties in slot definition ~S.~%~
                        The unexpected properties are ~S.~%~
@@ -124,7 +122,14 @@
                       entire-definition unknown-keywords))
         (flet ((provided-p (value)
                  (and value
-                      (not (eq value 'missing)))))
+                      (not (eq value 'missing))))
+               (maybe-warn-for-slot-name ()
+                 (unless (or slot-name-warning-triggered?
+                             (eq (symbol-package name) *package*))
+                   (setf slot-name-warning-triggered? #t)
+                   #+nil ;; this generates too many warnings which makes it kinda pointless
+                   (style-warn "defclass* for a slot name ~A while its home package is not *package* (~A). Default generated names will be interned into *package*!"
+                               (fully-qualified-symbol-name name) *package*))))
           (prog1
               (funcall *slot-definition-transformer*
                        (append (list name)
@@ -134,6 +139,7 @@
                                         (eq reader 'missing)
                                         (eq writer 'missing))
                                    (when *automatic-accessors-p*
+                                     (maybe-warn-for-slot-name)
                                      (setf accessor (funcall *accessor-name-transformer* name entire-definition))
                                      (list :accessor accessor))
                                    (append (when (provided-p accessor)
