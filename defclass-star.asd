@@ -92,3 +92,8 @@
   :requires (:defclass-star :cl-def)
   :components ((:module :integration
                         :components ((:file "cl-def-integration")))))
+
+(defsystem-connection defclass-star-and-cl-def-and-contextl
+  :requires (defclass-star-and-cl-def defclass-star-and-contextl)
+  :components ((:module :integration
+                        :components ((:file "cl-def-and-contextl-integration")))))
