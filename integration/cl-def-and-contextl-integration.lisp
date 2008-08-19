@@ -13,7 +13,7 @@
   (build-defclass-like-cl-def-expansion
    name supers slots class-options -options-
    (lambda (processed-slots clean-options)
-     `(deflayer ,name ,supers
+     `(contextl:deflayer ,name ,supers
         ,processed-slots
         ,@clean-options))))
 
