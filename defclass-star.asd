@@ -35,7 +35,7 @@
     (try :asdf-system-connections)))
 
 (defpackage #:defclass-star.system
-    (:use :cl :asdf :asdf-system-connections))
+    (:use :cl :asdf))
 
 (in-package #:defclass-star.system)
 
