@@ -21,9 +21,7 @@
 
 (in-package #:defclass-star.test)
 
-(in-root-suite)
-
-(defsuite* test)
+(defsuite* (test :in root-suite))
 
 (defmacro exp= (macro result)
   `(is (equal (macroexpand-1 ',macro)
