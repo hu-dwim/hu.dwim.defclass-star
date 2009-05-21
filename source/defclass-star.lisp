@@ -67,7 +67,12 @@
 
 (defun default-accessor-name-transformer (name definition)
   (let ((type (getf definition :type))
-        (package (slot-name-package name)))
+        (package (if (packagep *accessor-name-package*)
+                     *accessor-name-package*
+                     (case *accessor-name-package*
+                       (:slot-name (symbol-package name))
+                       (:default *package*)
+                       (t *package*)))))
     (if (eq type 'boolean)
         (let* ((name-string (string name))
                (last-char (aref name-string (1- (length name-string)))))
