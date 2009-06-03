@@ -57,14 +57,17 @@
 (defun style-warn (datum &rest args)
   (warn 'defclass-star-style-warning :format-control datum :format-arguments args))
 
+(defun slot-name-package (name)
+  (if (packagep *accessor-name-package*)
+      *accessor-name-package*
+      (case *accessor-name-package*
+        (:slot-name (symbol-package name))
+        (:default *package*)
+        (t *package*))))
+
 (defun default-accessor-name-transformer (name definition)
   (let ((type (getf definition :type))
-        (package (if (packagep *accessor-name-package*)
-                     *accessor-name-package*
-                     (case *accessor-name-package*
-                       (:slot-name (symbol-package name))
-                       (:default *package*)
-                       (t *package*)))))
+        (package (slot-name-package name)))
     (if (eq type 'boolean)
         (let* ((name-string (string name))
                (last-char (aref name-string (1- (length name-string)))))
@@ -77,6 +80,16 @@
                 #+nil((not (find #\- name-string))
                  (concatenate-symbol name "P" package))
                 (t (concatenate-symbol name "-P" package))))
+        (concatenate-symbol name "-OF" package))))
+
+(defun dwim-accessor-name-transformer (name definition)
+  (let ((type (getf definition :type))
+        (package (slot-name-package name)))
+    (if (eq type 'boolean)
+        (let* ((name-string (string name)))
+          (if (char= #\? (elt name-string (1- (length name-string))))
+              name
+              (concatenate-symbol name "?" package)))
         (concatenate-symbol name "-OF" package))))
 
 (defun default-initarg-name-transformer (name definition)

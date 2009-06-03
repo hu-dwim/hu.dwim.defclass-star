@@ -14,6 +14,7 @@
    #:defcondition*
    
    #:default-accessor-name-transformer
+   #:dwim-accessor-name-transformer
    #:default-initarg-name-transformer
    #:default-slot-definition-transformer
    #:make-name-transformer
