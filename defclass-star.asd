@@ -40,7 +40,7 @@
 (in-package #:defclass-star.system)
 
 (defsystem :defclass-star
-  :version "0.1"
+  :version "1.0"
   :author ("Attila Lendvai <attila.lendvai@gmail.com>")
   :maintainer ("Attila Lendvai <attila.lendvai@gmail.com>")
   :licence "Public Domain / BSD"
