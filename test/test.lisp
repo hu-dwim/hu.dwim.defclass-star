@@ -1,25 +1,17 @@
-;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
+;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2006 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See LICENCE for details.
 
-(in-package #:defclass-star.system)
-
-(defpackage #:defclass-star.test
-  (:use :cl :defclass-star :stefil)
-  (:nicknames #:dcs-test))
-
-(defpackage #:defclass-star.test-dummy)
-
-(in-package :defclass-star)
+(in-package :hu.dwim.defclass-star)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (import
    '(*export-class-name-p* *export-slot-names-p* *export-accessor-names-p*)
-   (find-package '#:defclass-star.test)))
+   (find-package :hu.dwim.defclass-star.test)))
 
-(in-package #:defclass-star.test)
+(in-package :hu.dwim.defclass-star.test)
 
 (defsuite* (test :in root-suite))
 
@@ -44,16 +36,16 @@
 (defmacro slot= (slotd result &rest head)
   (unless head
     (setf head (list 'is)))
-  `(,@head (equal (let ((defclass-star::*accessor-names* nil)
-                        (defclass-star::*slot-names* nil))
-                    (defclass-star::process-slot-definition ',slotd))
+  `(,@head (equal (let ((hu.dwim.defclass-star::*accessor-names* nil)
+                        (hu.dwim.defclass-star::*slot-names* nil))
+                    (hu.dwim.defclass-star::process-slot-definition ',slotd))
             ',result)))
 
 (defmacro slot-signals (condition-spec slotd)
   `(signals ,condition-spec
-    (let ((defclass-star::*accessor-names* nil)
-          (defclass-star::*slot-names* nil))
-      (defclass-star::process-slot-definition ',slotd))))
+    (let ((hu.dwim.defclass-star::*accessor-names* nil)
+          (hu.dwim.defclass-star::*slot-names* nil))
+      (hu.dwim.defclass-star::process-slot-definition ',slotd))))
 
 (defmacro slot-warns (slotd)
   `(slot-signals warning ,slotd))
@@ -123,9 +115,9 @@
           (3 4)))
   (exp= (defclass* some-class (some super classes)
           ((slot1))
-          (:accessor-name-package (find-package '#:defclass-star.test-dummy)))
+          (:accessor-name-package (find-package :hu.dwim.defclass-star.test.dummy)))
         (defclass some-class (some super classes)
-          ((slot1 :accessor defclass-star.test-dummy::slot1-of :initarg :slot1)))))
+          ((slot1 :accessor hu.dwim.defclass-star.test.dummy::slot1-of :initarg :slot1)))))
 
 (deftest* full ()
   (exp= (defclass* some-class (some super classes)
@@ -174,5 +166,5 @@
   (exp-errors (defclass* some-class ()
                 ((slot1))
                 (:accessor-name-transformer 'default-accessor-name-transformer many)))
-  (exp-warns (defclass* defclass-star::some-class ()
+  (exp-warns (defclass* hu.dwim.defclass-star::some-class ()
                ())))

@@ -1,10 +1,10 @@
-;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
+;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
 ;;;
-;;; Copyright (c) 2006 by the authors.
+;;; Copyright (c) 2009 by the authors.
 ;;;
 ;;; See LICENCE for details.
 
-(in-package :defclass-star)
+(in-package :hu.dwim.defclass-star)
 
 (enable-sharp-boolean-syntax)
 
@@ -51,11 +51,11 @@
 (defvar *slot-names*)
 (defvar *symbols-to-export*)
 
-(define-condition defclass-star-style-warning (simple-condition style-warning)
+(define-condition hu.dwim.defclass-star-style-warning (simple-condition style-warning)
   ())
 
 (defun style-warn (datum &rest args)
-  (warn 'defclass-star-style-warning :format-control datum :format-arguments args))
+  (warn 'hu.dwim.defclass-star-style-warning :format-control datum :format-arguments args))
 
 (defun slot-name-package (name)
   (if (packagep *accessor-name-package*)
@@ -131,7 +131,7 @@
         (when unknown-keywords
           (style-warn "Unexpected properties in slot definition ~S.~%~
                        The unexpected properties are ~S.~%~
-                       To avoid this warning (pushnew (or T :your-custom-keyword) defclass-star:*allowed-slot-definition-properties*)"
+                       To avoid this warning (pushnew (or T :your-custom-keyword) hu.dwim.defclass-star:*allowed-slot-definition-properties*)"
                       entire-definition unknown-keywords))
         (flet ((provided-p (value)
                  (and value
