@@ -136,6 +136,8 @@
         (flet ((provided-p (value)
                  (and value
                       (not (eq value 'missing))))
+               (transform-accessor ()
+                 (funcall *accessor-name-transformer* name entire-definition))
                (maybe-warn-for-slot-name ()
                  (unless (or slot-name-warning-triggered?
                              (eq (symbol-package name) *package*))
@@ -153,14 +155,24 @@
                                         (eq writer 'missing))
                                    (when *automatic-accessors-p*
                                      (maybe-warn-for-slot-name)
-                                     (setf accessor (funcall *accessor-name-transformer* name entire-definition))
+                                     (setf accessor (transform-accessor))
                                      (list :accessor accessor))
-                                   (append (when (provided-p accessor)
-                                             (list :accessor accessor))
-                                           (when (provided-p reader)
-                                             (list :reader reader))
-                                           (when (provided-p writer)
-                                             (list :writer writer))))
+                                   (let ((transformed-accessor (transform-accessor)))
+                                     (append (progn
+                                               (when (eq accessor t)
+                                                 (setf accessor transformed-accessor))
+                                               (when (provided-p accessor)
+                                                 (list :accessor accessor)))
+                                             (progn
+                                               (when (eq reader t)
+                                                 (setf reader transformed-accessor))
+                                               (when (provided-p reader)
+                                                 (list :reader reader)))
+                                             (progn
+                                               (when (eq writer t)
+                                                 (setf writer `(setf ,transformed-accessor)))
+                                               (when (provided-p writer)
+                                                 (list :writer writer))))))
                                (if (eq initarg 'missing)
                                    (when *automatic-initargs-p*
                                      (list :initarg (funcall *initarg-name-transformer* name entire-definition)))
