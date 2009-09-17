@@ -70,32 +70,30 @@
          (package (slot-name-package name))
          (name-string (string name))
          (last-char (elt name-string (1- (length name-string))))
-         (ends-with-question-mark? last-char))
+         (ends-with-question-mark? (char= last-char #\?)))
     (cond
       ((and (eq type 'boolean)
             (not ends-with-question-mark?))
        (cond ((char-equal last-char #\p)
               name)
-             ((char= #\? (elt name-string (1- (length name-string))))
-              ;; leave it alone if it's a foo?
-              name)
-             ;; i like unconditional -p postfix. ymmv.
+             ;; i like unconditional '-p' postfix. ymmv.
              #+nil((not (find #\- name-string))
-                   (concatenate-symbol name "P" package))
+                   (concatenate-symbol name '#:p package))
              (t (concatenate-symbol name '#:-p package))))
       (ends-with-question-mark?
        name)
       (t (concatenate-symbol name '#:-of package)))))
 
 (defun dwim-accessor-name-transformer (name definition)
-  (let ((type (getf definition :type))
-        (package (slot-name-package name)))
+  (let* ((type (getf definition :type))
+         (package (slot-name-package name))
+         (name-string (string name))
+         (last-char (elt name-string (1- (length name-string)))))
     (if (eq type 'boolean)
-        (let* ((name-string (string name)))
-          (if (char= #\? (elt name-string (1- (length name-string))))
-              name
-              (concatenate-symbol name "?" package)))
-        (concatenate-symbol name "-OF" package))))
+        (if (char= last-char #\?)
+            name
+            (concatenate-symbol name "?" package))
+        (concatenate-symbol name '#:-of package))))
 
 (defun default-initarg-name-transformer (name definition)
   (declare (ignorable definition))
