@@ -13,9 +13,10 @@
   :author ("Attila Lendvai <attila.lendvai@gmail.com>"
            "Levente Mészáros <levente.meszaros@gmail.com>"
            "Tamás Borbély <tomi.borbely@gmail.com>")
-  :description "Documentation for hu.dwim.defclass-star"
   :licence "BSD / Public domain"
+  :description "Documentation for hu.dwim.defclass-star"
   :depends-on (:hu.dwim.defclass-star.test
                :hu.dwim.wui)
   :components ((:module "documentation"
-                :components ((:file "package")))))
+                :components ((:file "defclass-star" :depends-on ("package"))
+                             (:file "package")))))
