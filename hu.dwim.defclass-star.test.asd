@@ -10,8 +10,9 @@
 
 (defsystem :hu.dwim.defclass-star.test
   :class hu.dwim.test-system
-  :depends-on (:hu.dwim.defclass-star
-               :hu.dwim.stefil+hu.dwim.def)
+  :depends-on (:hu.dwim.common
+               :hu.dwim.defclass-star
+               :hu.dwim.stefil+hu.dwim.def+swank)
   :components ((:module "test"
                 :components ((:file "package")
                              (:file "test" :depends-on ("package"))))))
