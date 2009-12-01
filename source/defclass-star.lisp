@@ -233,6 +233,7 @@
                                       (export-accessor-names *export-accessor-names-p*)
                                       (export-slot-names *export-slot-names-p*))
   (declare (ignore supers))
+  #+nil ;; this generates warnings where defclass would not, delme eventually?
   (unless (eq (symbol-package name) *package*)
     (style-warn "defclass* for ~A while its home package is not *package* (~A)"
                 (fully-qualified-symbol-name name) *package*))
