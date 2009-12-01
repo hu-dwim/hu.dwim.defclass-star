@@ -10,10 +10,6 @@
 
 (defsystem :hu.dwim.defclass-star+contextl
   :class hu.dwim.system
-  :author ("Attila Lendvai <attila.lendvai@gmail.com>"
-           "Tamás Borbély <tomi.borbely@gmail.com>"
-           "Levente Mészáros <levente.meszaros@gmail.com>")
-  :licence "BSD / Public domain"
   :depends-on (:contextl
                :hu.dwim.defclass-star)
   :components ((:module "integration"
