@@ -65,6 +65,20 @@
 (define-modify-macro remf-keywords (&rest keywords) remove-keywords
   "Removes the properties identified by KEYWORDS from PLACE.")
 
+;; from hu.dwim.wui
+(defun fully-qualified-symbol-name (symbol &key separator)
+  (let* ((symbol-name (symbol-name symbol))
+         (package (symbol-package symbol))
+         (keyword-package (load-time-value (find-package "KEYWORD"))))
+    (concatenate 'string
+                 (unless (eq package keyword-package)
+                   (package-name package))
+                 (or separator
+                     (if (or (not (eq package keyword-package))
+                             (not (eq (nth-value 1 (find-symbol symbol-name package)) :external)))
+                         "::"
+                         ":"))
+                 symbol-name)))
 
 (defun integrated-export (symbol other-package)
   (export symbol (symbol-package symbol))

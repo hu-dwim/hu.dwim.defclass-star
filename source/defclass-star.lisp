@@ -99,10 +99,6 @@
   (declare (ignorable definition))
   (concatenate-symbol name #.(symbol-package :asdf)))
 
-(defun fully-qualified-symbol-name (symbol)
-  (let ((*package* #.(find-package "KEYWORD")))
-    (format nil "~S" symbol)))
-
 (defun process-slot-definition (definition)
   (unless (consp definition)
     (setf definition (list definition)))
