@@ -6,7 +6,7 @@
 
 (in-package :hu.dwim.defclass-star.documentation)
 
-(def project :hu.dwim.defclass-star :path (system-pathname :hu.dwim.defclass-star))
+(def project :hu.dwim.defclass-star)
 
 (def book user-guide (:title "User guide")
   (chapter (:title "Introduction")
