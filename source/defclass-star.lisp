@@ -105,6 +105,7 @@
   (let ((name (pop definition))
         (initform 'missing)
         (entire-definition definition))
+    (assert name)
     (push name *slot-names*)
     (if (oddp (length definition))
         (progn
