@@ -11,7 +11,7 @@
 (defsystem :hu.dwim.defclass-star.documentation
   :class hu.dwim.documentation-system
   :depends-on (:hu.dwim.defclass-star.test
-               :hu.dwim.wui)
+               :hu.dwim.presentation)
   :components ((:module "documentation"
                 :components ((:file "defclass-star" :depends-on ("package"))
                              (:file "package")))))
