@@ -185,19 +185,24 @@
               (pushnew reader *accessor-names*))
             (when (provided-p writer)
               (pushnew (second writer) *accessor-names*))
-            (when (provided-p export)
-              (ecase export
-                (:accessor
-                 (when accessor
-                   (push accessor *symbols-to-export*)))
-                ((:slot :name :slot-name)
-                 (when name
-                   (push name *symbols-to-export*)))
-                ((t)
-                 (when accessor
-                   (push accessor *symbols-to-export*))
-                 (when name
-                   (push name *symbols-to-export*)))))))))))
+            (if (not (eq export 'missing))
+                (ecase export
+                  (:accessor
+                   (when accessor
+                     (push accessor *symbols-to-export*)))
+                  ((:slot :name :slot-name)
+                   (push name *symbols-to-export*))
+                  ((t)
+                   (when accessor
+                     (push accessor *symbols-to-export*))
+                   (push name *symbols-to-export*))
+                  ((nil)))
+                (progn
+                  (when *export-accessor-names-p*
+                    (when accessor
+                      (push accessor *symbols-to-export*)))
+                  (when *export-slot-names-p*
+                    (push name *symbols-to-export*))))))))))
 
 (defun extract-options-into-bindings (options)
   (let ((binding-names)
@@ -247,18 +252,12 @@
                                (mapcar 'process-slot-definition slots)
                                clean-options)))
           (if (or *symbols-to-export*
-                  *export-class-name-p*
-                  *export-accessor-names-p*
-                  *export-slot-names-p*)
+                  *export-class-name-p*)
               `(progn
                  ,result
                  (eval-when (:compile-toplevel :load-toplevel :execute)
                    (export '(,@(append (when *export-class-name-p*
                                          (list name))
-                                       (when *export-accessor-names-p*
-                                         (nreverse *accessor-names*))
-                                       (when *export-slot-names-p*
-                                         (nreverse *slot-names*))
                                        *symbols-to-export*))
                            ,(package-name *package*)))
                  (find-class ',name nil))
