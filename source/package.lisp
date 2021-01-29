@@ -7,6 +7,7 @@
 (in-package :common-lisp-user)
 
 (defpackage :hu.dwim.defclass-star
+  (:nicknames :class*)
   (:use :common-lisp)
   (:export #:defclass*
            #:defcondition*
