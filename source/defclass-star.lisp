@@ -9,6 +9,15 @@
 (enable-sharp-boolean-syntax)
 
 (defmacro make-name-transformer (&rest elements)
+  "Return an accessor name transformer.
+The unquoted `name' symbol argument is substituted for the slot name.
+Class option examples:
+
+  :accessor-name-transformer* (make-name-transformer \"FOO-\" name \"-BAR\")
+
+Use the slot name directly:
+
+  :accessor-name-transformer* (make-name-transformer name)"
   `(lambda (name definition)
     (declare (ignorable definition))
     (concatenate-symbol ,@(mapcar (lambda (el)
