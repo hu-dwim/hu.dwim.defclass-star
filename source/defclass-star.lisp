@@ -256,9 +256,14 @@
               `(progn
                  ,result
                  (eval-when (:compile-toplevel :load-toplevel :execute)
-                   (export '(,@(append (when *export-class-name-p*
-                                         (list name))
-                                       *symbols-to-export*))
+                   ;; Don't try to export symbols that don't belong to *package*.
+                   ;; This can happen when inheriting from a class and
+                   ;; overriding some slot.
+                   (export '(,@(remove-if (lambda (sym)
+                                            (not (eq (symbol-package sym) *package*)))
+                                (append (when *export-class-name-p*
+                                          (list name))
+                                 *symbols-to-export*)))
                            ,(package-name *package*)))
                  (find-class ',name nil))
               result))))))
