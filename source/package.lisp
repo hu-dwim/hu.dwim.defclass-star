@@ -21,4 +21,8 @@
            #:*accessor-name-transformer*
            #:*automatic-accessors-p*
            #:*initarg-name-transformer*
-           #:*automatic-initargs-p*))
+           #:*automatic-initargs-p*
+           #:*slot-definition-transformer*
+           #:*export-class-name-p*
+           #:*export-accessor-names-p*
+           #:*export-slot-names-p*))
