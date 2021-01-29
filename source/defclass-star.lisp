@@ -193,13 +193,13 @@
                   ((:slot :name :slot-name)
                    (push name *symbols-to-export*))
                   ((t)
-                   (when accessor
+                   (when (and accessor (not (eq accessor 'missing)))
                      (push accessor *symbols-to-export*))
                    (push name *symbols-to-export*))
                   ((nil)))
                 (progn
                   (when *export-accessor-names-p*
-                    (when accessor
+                    (when (and accessor (not (eq accessor 'missing)))
                       (push accessor *symbols-to-export*)))
                   (when *export-slot-names-p*
                     (push name *symbols-to-export*))))))))))
