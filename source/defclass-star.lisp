@@ -13,11 +13,11 @@
 The unquoted `name' symbol argument is substituted for the slot name.
 Class option examples:
 
-  :accessor-name-transformer* (make-name-transformer \"FOO-\" name \"-BAR\")
+  :accessor-name-transformer (make-name-transformer \"FOO-\" name \"-BAR\")
 
 Use the slot name directly:
 
-  :accessor-name-transformer* (make-name-transformer name)"
+  :accessor-name-transformer (make-name-transformer name)"
   `(lambda (name definition)
     (declare (ignorable definition))
     (concatenate-symbol ,@(mapcar (lambda (el)
