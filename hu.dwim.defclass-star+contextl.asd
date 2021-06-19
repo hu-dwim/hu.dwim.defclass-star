@@ -7,6 +7,7 @@
 (defsystem :hu.dwim.defclass-star+contextl
   :defsystem-depends-on (:hu.dwim.asdf)
   :class "hu.dwim.asdf:hu.dwim.system"
+  :version (:read-file-form "version.sexp")
   :depends-on (:contextl
                :hu.dwim.defclass-star)
   :components ((:module "integration"
