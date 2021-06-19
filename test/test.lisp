@@ -13,7 +13,12 @@
 
 (in-package :hu.dwim.defclass-star/test)
 
-(defsuite* (test :in root-suite))
+(defsuite* (test :in root-suite) ()
+  ;; TODO FIXME? this only works when running the entire test
+  ;; suite. or just update the tests with the expansions of the
+  ;; predicates?
+  (let ((hu.dwim.defclass-star::*predicate-name-transformer* nil))
+    (-run-child-tests-)))
 
 (defmacro exp= (macro result)
   `(is (equal (macroexpand-1 ',macro)

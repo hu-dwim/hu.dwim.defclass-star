@@ -42,7 +42,7 @@ The predicate returns non-nil when the argument is of the `name' class.")
   (declare (ignore args))
   (intern (format nil "~a-P" name) (symbol-package name)))
 
-;; these control whether the respective names should be exported from *package* (which is samples at macroexpan time)
+;; these control whether the respective names should be exported from *package* (which is sampled at macroexpand time)
 (defvar *export-class-name-p* nil)
 (defvar *export-accessor-names-p* nil)
 (defvar *export-slot-names-p* nil)
@@ -274,31 +274,33 @@ The predicate returns non-nil when the argument is of the `name' class.")
         (let ((result (funcall expansion-builder
                                (mapcar 'process-slot-definition slots)
                                clean-options)))
-          `(progn
-             ,@(when *predicate-name-transformer*
-                 (let ((pred-name (funcall *predicate-name-transformer* name)))
-                   `((defun ,pred-name (object)
-                       (typep object ',name))
-                     ,@(when *export-predicate-name-p*
-                         `((eval-when (:compile-toplevel :load-toplevel :execute)
-                             (export ',pred-name
-                                     ,(package-name *package*))))))))
-             ,(if (or *symbols-to-export*
-                      *export-class-name-p*)
-                  `(progn
-                     ,result
-                     (eval-when (:compile-toplevel :load-toplevel :execute)
-                       ;; Don't try to export symbols that don't belong to *package*.
-                       ;; This can happen when inheriting from a class and
-                       ;; overriding some slot.
-                       (export '(,@(remove-if (lambda (sym)
-                                                (not (eq (symbol-package sym) *package*)))
-                                    (append (when *export-class-name-p*
-                                              (list name))
-                                     *symbols-to-export*)))
-                               ,(package-name *package*)))
-                     (find-class ',name nil))
-                  result)))))))
+          (if (or *symbols-to-export*
+                  *export-class-name-p*
+                  *predicate-name-transformer*)
+              `(progn
+                 ,result
+                 ,@(when *predicate-name-transformer*
+                     (let ((pred-name (funcall *predicate-name-transformer* name)))
+                       `((defun ,pred-name (object)
+                           (typep object ',name))
+                         ,@(when *export-predicate-name-p*
+                             `((eval-when (:compile-toplevel :load-toplevel :execute)
+                                 (export ',pred-name
+                                         ,(package-name *package*))))))))
+                 ,@(when (or *symbols-to-export*
+                             *export-class-name-p*)
+                     `((eval-when (:compile-toplevel :load-toplevel :execute)
+                         ;; Don't try to export symbols that don't belong to *package*.
+                         ;; This can happen when inheriting from a class and
+                         ;; overriding some slot.
+                         (export '(,@(remove-if (lambda (sym)
+                                                  (not (eq (symbol-package sym) *package*)))
+                                      (append (when *export-class-name-p*
+                                                (list name))
+                                       *symbols-to-export*)))
+                                 ,(package-name *package*)))
+                       (find-class ',name nil))))
+            result))))))
 
 (defmacro defclass* (name supers slots &rest options)
   (build-defclass-like-expansion
