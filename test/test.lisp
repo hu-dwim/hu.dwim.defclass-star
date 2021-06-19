@@ -9,9 +9,9 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (import
    '(*export-class-name-p* *export-slot-names-p* *export-accessor-names-p*)
-   (find-package :hu.dwim.defclass-star.test)))
+   (find-package :hu.dwim.defclass-star/test)))
 
-(in-package :hu.dwim.defclass-star.test)
+(in-package :hu.dwim.defclass-star/test)
 
 (defsuite* (test :in root-suite))
 
@@ -115,9 +115,9 @@
           (3 4)))
   (exp= (defclass* some-class (some super classes)
           ((slot1))
-          (:accessor-name-package (find-package :hu.dwim.defclass-star.test.dummy)))
+          (:accessor-name-package (find-package :hu.dwim.defclass-star/test.dummy)))
         (defclass some-class (some super classes)
-          ((slot1 :accessor hu.dwim.defclass-star.test.dummy::slot1-of :initarg :slot1)))))
+          ((slot1 :accessor hu.dwim.defclass-star/test.dummy::slot1-of :initarg :slot1)))))
 
 (deftest* full ()
   (exp= (defclass* some-class (some super classes)
