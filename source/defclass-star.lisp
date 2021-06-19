@@ -40,7 +40,10 @@ The predicate returns non-nil when the argument is of the `name' class.")
 
 (defun default-predicate-name-transformer (name &rest args)
   (declare (ignore args))
-  (intern (format nil "~a-P" name) (symbol-package name)))
+  (intern (concatenate 'string
+                       (symbol-name name)
+                       (string (if (position #\- (symbol-name name)) '#:-p '#:p))) ; compatibility with mutable syntax table case
+          (symbol-package name)))
 
 ;; these control whether the respective names should be exported from *package* (which is sampled at macroexpand time)
 (defvar *export-class-name-p* nil)
