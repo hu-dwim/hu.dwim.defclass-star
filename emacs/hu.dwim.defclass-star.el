@@ -17,8 +17,8 @@
            (defcondition* defcondition))))
     (dolist (el overrides)
       (put (cl-first el) 'common-lisp-indent-function
-           (if (symbolp (second el))
-               (get (second el) 'common-lisp-indent-function)
+           (if (symbolp (cl-second el))
+               (get (cl-second el) 'common-lisp-indent-function)
                (cl-second el))))))
 
 (add-hook 'lisp-mode-hook 'hu.dwim.defclass-star:lisp-mode-hook)
