@@ -5,7 +5,6 @@
 ;;; See LICENCE for details.
 
 (require 'lisp-mode)
-(provide 'hu.dwim.defclass-star)
 
 ;; usage example: add something like this to your init.el:
 ;;
@@ -17,9 +16,11 @@
          '((defclass* defclass)
            (defcondition* defcondition))))
     (dolist (el overrides)
-      (put (first el) 'common-lisp-indent-function
+      (put (cl-first el) 'common-lisp-indent-function
            (if (symbolp (second el))
                (get (second el) 'common-lisp-indent-function)
-               (second el))))))
+               (cl-second el))))))
 
 (add-hook 'lisp-mode-hook 'hu.dwim.defclass-star:lisp-mode-hook)
+
+(provide 'hu.dwim.defclass-star)
