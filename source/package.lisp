@@ -23,4 +23,6 @@
            #:*accessor-name-transformer*
            #:*automatic-accessors-p*
            #:*initarg-name-transformer*
-           #:*automatic-initargs-p*))
+           #:*automatic-initargs-p*
+           #:*type-inference*
+           #:basic-type-inference))

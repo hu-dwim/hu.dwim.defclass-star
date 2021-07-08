@@ -65,6 +65,56 @@ The predicate returns non-nil when the argument is of the `name' class.")
     (push name slot-def)
     slot-def))
 
+(defvar *type-inference* nil
+  "Fallback type inference function.
+See `basic-type-inference' for a possible value.
+Set this to nil to disable inference.")
+
+(defun basic-type-inference (value)
+  "Return general type of VALUE.
+This is like `type-of' but returns less specialized types for some common
+subtypes, e.g.  for \"\" return 'string instead of `(SIMPLE-ARRAY CHARACTER
+\(0))'.
+
+Note that in a slot definition, '() is inferred to be a list while NIL is
+inferred to be a boolean.
+
+Non-basic form types are not inferred (returns nil).
+Non-basic scalar types are derived to their own type (with `type-of')."
+  (cond
+    ((and (consp value)
+          (eq (first value) 'quote)
+          (symbolp (second value)))
+     (if (eq (type-of (second value)) 'null)
+         'list                    ; The empty list.
+         'symbol))
+    ((and (consp value)
+          (eq (first value) 'function))
+     'function)
+    ((and (consp value)
+          (not (eq (first value) 'quote)))
+     ;; Non-basic form.
+     nil)
+    (t (let* ((type (if (symbolp value)
+                        (handler-case
+                            ;; We can get type of externally defined symbol.
+                            (type-of (eval value))
+                          (error ()
+                            ;; Don't infer type if symbol is not yet defined.
+                            nil))
+                        (type-of value))))
+         (if type
+             (flet ((derive-type (general-type)
+                      (when (subtypep type general-type)
+                        general-type)))
+               (or (some #'derive-type '(string boolean list array hash-table integer
+                                         complex number))
+                   ;; Only allow objects of the same type by default.
+                   ;; We could have returned nil to inhibit the generation of a
+                   ;; :type property.
+                   type))
+             nil)))))
+
 (defvar *allowed-slot-definition-properties* '(:documentation :type :reader :writer :allocation :export)
   "Holds a list of keywords that are allowed in slot definitions (:accessor and :initarg are implicitly included).")
 
@@ -141,10 +191,10 @@ The predicate returns non-nil when the argument is of the `name' class.")
             () "Found non-keywords in ~S" definition)
     (destructuring-bind (&key (accessor 'missing) (initarg 'missing)
                               (reader 'missing) (writer 'missing)
-                              (export 'missing)
+                              (export 'missing) (type 'missing)
                               &allow-other-keys)
         definition
-      (remf-keywords definition :accessor :reader :writer :initform :initarg :export)
+      (remf-keywords definition :accessor :reader :writer :initform :initarg :export :type)
       (let ((unknown-keywords (loop for el :in definition :by #'cddr
                                     unless (or (member t *allowed-slot-definition-properties*)
                                                (member el *allowed-slot-definition-properties*))
@@ -171,7 +221,14 @@ The predicate returns non-nil when the argument is of the `name' class.")
               (funcall *slot-definition-transformer*
                        (append (list name)
                                (unless (eq initform 'missing)
-                                 (list :initform initform))
+                                 (append (list :initform initform)
+                                         (cond
+                                           ((and type (not (eq type 'missing)))
+                                            (list :type type))
+                                           (*type-inference*
+                                            (let ((initform-type (funcall *type-inference* initform)))
+                                              (when initform-type
+                                                (list :type initform-type)))))))
                                (if (and (eq accessor 'missing)
                                         (eq reader 'missing)
                                         (eq writer 'missing))
@@ -248,7 +305,8 @@ The predicate returns non-nil when the argument is of the `name' class.")
          :export-class-name-p *export-class-name-p*
          :export-accessor-names-p *export-accessor-names-p*
          :export-slot-names-p *export-slot-names-p*
-         :slot-definition-transformer *slot-definition-transformer*)))
+         :slot-definition-transformer *slot-definition-transformer*
+         :type-inference *type-inference*)))
     (values binding-names binding-values (nreverse clean-options))))
 
 (defun build-defclass-like-expansion (name supers slots options expansion-builder
