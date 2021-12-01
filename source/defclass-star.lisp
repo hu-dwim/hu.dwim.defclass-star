@@ -293,16 +293,11 @@ The predicate returns non-nil when the argument is of the `name' class.")
                  ,@(when (or *symbols-to-export*
                              *export-class-name-p*)
                      `((eval-when (:compile-toplevel :load-toplevel :execute)
-                         ;; Don't try to export symbols that don't belong to *package*.
-                         ;; This can happen when inheriting from a class and
-                         ;; overriding some slot.
-                         (export '(,@(remove-if (lambda (sym)
-                                                  (not (eq (symbol-package sym) *package*)))
-                                      (append (when *export-class-name-p*
-                                                (list name))
-                                       *symbols-to-export*)))
-                                 ,(package-name *package*)))
-                       (find-class ',name nil))))
+                         (export '(,@(append (when *export-class-name-p*
+                                         (list name))
+                                       *symbols-to-export*))
+                                 ,(package-name *package*)))))
+                 (find-class ',name nil))
             result))))))
 
 (defmacro defclass* (name supers slots &rest options)
