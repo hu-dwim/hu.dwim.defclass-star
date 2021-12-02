@@ -193,3 +193,28 @@
   #+() ;; this has been commented out...
   (exp-warns (defclass* hu.dwim.defclass-star::some-class ()
                ())))
+
+(deftest* bug/export-slot-name-from-foreign-package ()
+  (let* ((pkg1 (find-package :hu.dwim.defclass-star/test.pkg1))
+         (pkg2 (find-package :hu.dwim.defclass-star/test.pkg2))
+         (exp1 (let ((*package* pkg1))
+                 (macroexpand-1
+                  '(defclass* hu.dwim.defclass-star/test.pkg1::foo ()
+                    ((hu.dwim.defclass-star/test.pkg1::foo-name))
+                    (:export-slot-names-p t)))))
+         (exp2 (let ((*package* pkg2))
+                 (macroexpand-1
+                  '(defclass* hu.dwim.defclass-star/test.pkg2::bar
+                    (hu.dwim.defclass-star/test.pkg1::foo)
+                    ;; override the slot in the superclass
+                    ((hu.dwim.defclass-star/test.pkg1::foo-name :initform ""))
+                    (:export-slot-names-p t))))))
+    ;; The bug is/was:
+    ;; These symbols are not accessible in the HU.DWIM.DEFCLASS-STAR/TEST.PKG2 package:
+    ;;   (HU.DWIM.DEFCLASS-STAR/TEST.PKG1:FOO-NAME)
+    (finishes (let ((*package* pkg1))
+                (eval exp1)))
+    (with-expected-failures
+      ;; TODO FIXME
+      (finishes (let ((*package* pkg2))
+                  (eval exp2))))))
