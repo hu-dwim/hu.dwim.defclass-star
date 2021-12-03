@@ -27,7 +27,9 @@ Use the slot name directly:
                                         el))
                                   elements))))
 
-;; more or less public vars (it's discouraged to set them globally)
+;; setting these globally is a very bad idea, because it affects every
+;; package that uses defclass-star, and what's even worse, in a
+;; load-order dependent way. a recipe for bugs that are hard to debug.
 (defvar *accessor-name-package* nil
   "A package, or :slot-name means the home-package of the slot-name symbol and nil means *package*")
 (defvar *accessor-name-transformer* 'default-accessor-name-transformer)
@@ -35,8 +37,8 @@ Use the slot name directly:
 
 (defvar *predicate-name-transformer* 'default-predicate-name-transformer
   "A function that takes the class name and its definition as argument.
-Return the predicate name.
-The predicate returns non-nil when the argument is of the `name' class.")
+Return the name of the predicate function.
+The predicate function returns true when the argument is a type of the `name' class.")
 
 (defun default-predicate-name-transformer (name &rest args)
   (declare (ignore args))
