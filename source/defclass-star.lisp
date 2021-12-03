@@ -35,6 +35,7 @@ Use the slot name directly:
 (defvar *accessor-name-transformer* 'default-accessor-name-transformer)
 (defvar *automatic-accessors-p* #t)
 
+(defvar *automatic-predicates-p* #t)
 (defvar *predicate-name-transformer* 'default-predicate-name-transformer
   "A function that takes the class name and its definition as argument.
 Return the name of the predicate function.
@@ -250,6 +251,7 @@ The predicate function returns true when the argument is a type of the `name' cl
          :export-class-name-p *export-class-name-p*
          :export-accessor-names-p *export-accessor-names-p*
          :export-slot-names-p *export-slot-names-p*
+         :automatic-predicates-p *automatic-predicates-p*
          :slot-definition-transformer *slot-definition-transformer*)))
     (values binding-names binding-values (nreverse clean-options))))
 
@@ -284,7 +286,8 @@ The predicate function returns true when the argument is a type of the `name' cl
                   *predicate-name-transformer*)
               `(progn
                  ,result
-                 ,@(when *predicate-name-transformer*
+                 ,@(when (and *automatic-predicates-p*
+                              *predicate-name-transformer*)
                      (let ((pred-name (funcall *predicate-name-transformer* name)))
                        `((defun ,pred-name (object)
                            (typep object ',name))
