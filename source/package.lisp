@@ -18,9 +18,4 @@
            #:default-slot-definition-transformer
            #:default-predicate-name-transformer
            #:make-name-transformer
-           #:*allowed-slot-definition-properties*
-           ;; more or less public vars (it's discouraged to set them globally)
-           #:*accessor-name-transformer*
-           #:*automatic-accessors-p*
-           #:*initarg-name-transformer*
-           #:*automatic-initargs-p*))
+           #:*allowed-slot-definition-properties*))
