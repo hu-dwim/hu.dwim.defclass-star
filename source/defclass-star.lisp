@@ -291,6 +291,10 @@ The predicate function returns true when the argument is a type of the `name' cl
                      (let ((pred-name (funcall *predicate-name-transformer* name)))
                        `((defun ,pred-name (object)
                            (typep object ',name))
+                         ;; TODO shouldn't *export-predicate-name-p*
+                         ;; get its default from the "e" flag? (def
+                         ;; (class e) foo-bar ...) doesn't export
+                         ;; FOO-BAR-P
                          ,@(when *export-predicate-name-p*
                              `((eval-when (:compile-toplevel :load-toplevel :execute)
                                  (export ',pred-name

@@ -10,4 +10,4 @@
   (let ((*readtable* (copy-readtable)))
     (enable-sharp-boolean-syntax)
     (push (cons "HU.DWIM.DEFCLASS-STAR" *readtable*) swank:*readtable-alist*)
-    (push (cons "HU.DWIM.DEFCLASS-STAR.TEST" *readtable*) swank:*readtable-alist*)))
+    (push (cons "HU.DWIM.DEFCLASS-STAR/TEST" *readtable*) swank:*readtable-alist*)))

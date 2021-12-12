@@ -29,7 +29,7 @@
   :defsystem-depends-on (:hu.dwim.asdf)
   :class "hu.dwim.asdf:hu.dwim.documentation-system"
   :version (:read-file-form "version.sexp")
-  :depends-on (:hu.dwim.defclass-star.test
+  :depends-on (:hu.dwim.defclass-star/test
                :hu.dwim.presentation)
   :components ((:module "documentation"
                 :components ((:file "defclass-star" :depends-on ("package"))
