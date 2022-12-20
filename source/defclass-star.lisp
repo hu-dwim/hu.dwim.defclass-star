@@ -42,11 +42,23 @@ Return the name of the predicate function.
 The predicate function returns true when the argument is a type of the `name' class.")
 
 (defun default-predicate-name-transformer (name &rest args)
+  "Return predicate name that's suffixed with '-p' if NAME already contains a '-',
+or just 'p' otherwise.."
   (declare (ignore args))
   (intern (concatenate 'string
                        (symbol-name name)
                        (string (if (position #\- (symbol-name name)) '#:-p '#:p))) ; compatibility with mutable syntax table case
           (symbol-package name)))
+
+(defun always-dashed-predicate-name-transformer (name &rest args)
+  "Return predicate name that's always suffixed with '-p'."
+  (declare (ignore args))
+  (intern (format nil "~a-P" name) (symbol-package name)))
+
+(defun question-mark-predicate-name-transformer (name &rest args)
+  "Return predicate name that's always suffixed with '?'."
+  (declare (ignore args))
+  (intern (format nil "~a?" name) (symbol-package name)))
 
 ;; these control whether the respective names should be exported from *package* (which is sampled at macroexpand time)
 (defvar *export-class-name-p* nil)

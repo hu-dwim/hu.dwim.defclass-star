@@ -17,5 +17,7 @@
            #:default-initarg-name-transformer
            #:default-slot-definition-transformer
            #:default-predicate-name-transformer
+           #:always-dashed-predicate-name-transformer
+           #:question-mark-predicate-name-transformer
            #:make-name-transformer
            #:*allowed-slot-definition-properties*))
