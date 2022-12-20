@@ -1,0 +1,45 @@
+#+TITLE: NClasses
+
+NClasses provides helper macros to help write classes and conditions with less
+boilerplate.
+
+It's a fork of [[https://github.com/hu-dwim/hu.dwim.defclass-star][hu.dwim.defclass-star]].
+
+** Motivation
+
+- =hu.dwim.defclass-star= has a symbol export bug which cannot be fixed
+  upstream, see https://github.com/hu-dwim/hu.dwim.defclass-star/pull/7 and
+  https://github.com/hu-dwim/hu.dwim.defclass-star/issues/12 for a discussion.
+
+- The macro and package names of hu.dwim.defclass-star prove to be rather
+  unwieldy.
+  Emacs can automatically highlight =define-class= as a macro, but not
+  =defclass*=.
+
+- This library offers new features that wouldn't be accepted upstream, like
+  https://github.com/hu-dwim/hu.dwim.defclass-star/pull/3.
+
+** Examples
+
+A basic session:
+
+#+begin_src lisp
+  (define-class foo ()
+    ())
+#+end_src
+
+See the [[file:package.lisp][package]] documentation for a usage guide and more examples.
+
+** Changes from =defclass-star=
+
+- Renamed =defclass*= to =define-class=.
+- Renamed =defcondition*= to =define-condition*=.
+- Only the core system has been kept, the ContextL, hu.dwim.def and Swank
+  optional features have been removed.
+- New predicate name transformers =always-dashed-predicate-name-transformer= and
+  =question-mark-predicate-name-transformer=.
+
+** History
+
+NClasses was originally developed for [[https://nyxt.atlas.engineer][Nyxt]], so the "N" may stand for it, or
+"New", or whatever poetic meaning you may find behind it!
