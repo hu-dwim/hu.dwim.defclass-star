@@ -23,6 +23,8 @@ It's a fork of [[https://github.com/hu-dwim/hu.dwim.defclass-star][hu.dwim.defcl
 
 A basic session:
 
+# TODO: Finish me!
+
 #+begin_src lisp
   (define-class foo ()
     ())
