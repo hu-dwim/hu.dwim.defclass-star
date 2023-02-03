@@ -1,31 +1,10 @@
-;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
-;;;
-;;; Copyright (c) 2009 by the authors.
-;;;
-;;; See LICENCE for details.
+;;;; SPDX-FileCopyrightText: hu.dwim & Atlas Engineer LLC
+;;;; SPDX-License-Identifier: Public Domain
 
-(in-package :hu.dwim.defclass-star)
+(in-package :nclass)
 
-;;; THE CONTENT OF THIS FILE IS COPIED OVER FROM SOME OTHER LIBRARIES TO DECREASE THE NUMBER OF DEPENDENCIES
-
-(defmacro enable-sharp-boolean-syntax ()
-  "Copies *readtable* and enables #t and #f readers for t and nil in the copy."
-  '(eval-when (:compile-toplevel :execute)
-    (setf *readtable* (copy-readtable *readtable*))
-    (%enable-sharp-boolean-syntax)))
-
-(defun %enable-sharp-boolean-syntax ()
-  (set-dispatch-macro-character
-   #\# #\t
-   (lambda (s c n)
-     (declare (ignore s c n))
-     t))
-  (set-dispatch-macro-character
-   #\# #\f
-   (lambda (s c n)
-     (declare (ignore s c n))
-     nil))
-  (values))
+;;; The content of this file is copied over from some other libraries to
+;;; decrease the number of dependencies.
 
 (defun concatenate-symbol (&rest args)
   "Args are processed as parts of the result symbol with two exceptions except when a package is encountered then it is stored as the target package at intern."
@@ -45,11 +24,6 @@
     (if package
         (intern symbol-name package)
         (intern symbol-name))))
-
-(defun strcat (&rest string-designators)
-  (with-output-to-string (str)
-    (dolist (s string-designators)
-      (when s (princ s str)))))
 
 (defun remove-keywords (plist &rest keywords)
   "Creates a copy of PLIST without the listed KEYWORDS."
@@ -79,8 +53,3 @@
                          "::"
                          ":"))
                  symbol-name)))
-
-(defun integrated-export (symbol other-package)
-  (export symbol (symbol-package symbol))
-  (import symbol other-package)
-  (export symbol other-package))
