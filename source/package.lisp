@@ -1,13 +1,9 @@
-;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
-;;;
-;;; Copyright (c) 2009 by the authors.
-;;;
-;;; See LICENCE for details.
+;;;; SPDX-FileCopyrightText: hu.dwim & Atlas Engineer LLC
+;;;; SPDX-License-Identifier: Public Domain
 
 (in-package :common-lisp-user)
 
-(defpackage :hu.dwim.defclass-star
-  (:nicknames :class*)
+(defpackage :nclass
   (:use :common-lisp)
   (:export #:defclass*
            #:defcondition*
