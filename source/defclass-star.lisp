@@ -1,10 +1,7 @@
-;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
-;;;
-;;; Copyright (c) 2009 by the authors.
-;;;
-;;; See LICENCE for details.
+;;;; SPDX-FileCopyrightText: dwim.hu & Atlas Engineer LLC
+;;;; SPDX-License-Identifier: Public Domain
 
-(in-package :hu.dwim.defclass-star)
+(in-package :nclass)
 
 (defmacro make-name-transformer (&rest elements)
   "Return an accessor name transformer.
