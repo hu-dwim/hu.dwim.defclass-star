@@ -6,8 +6,6 @@
 
 (in-package :hu.dwim.defclass-star)
 
-(enable-sharp-boolean-syntax)
-
 (defmacro make-name-transformer (&rest elements)
   "Return an accessor name transformer.
 The unquoted `name' symbol argument is substituted for the slot name.
@@ -33,9 +31,9 @@ Use the slot name directly:
 (defvar *accessor-name-package* nil
   "A package, or :slot-name means the home-package of the slot-name symbol and nil means *package*")
 (defvar *accessor-name-transformer* 'default-accessor-name-transformer)
-(defvar *automatic-accessors-p* #t)
+(defvar *automatic-accessors-p* t)
 
-(defvar *automatic-predicates-p* #t)
+(defvar *automatic-predicates-p* t)
 (defvar *predicate-name-transformer* 'default-predicate-name-transformer
   "A function that takes the class name and its definition as argument.
 Return the name of the predicate function.
@@ -67,7 +65,7 @@ or just 'p' otherwise.."
 (defvar *export-predicate-name-p* nil)
 
 (defvar *initarg-name-transformer* 'default-initarg-name-transformer)
-(defvar *automatic-initargs-p* #t)
+(defvar *automatic-initargs-p* t)
 
 (defvar *slot-definition-transformer* 'default-slot-definition-transformer)
 
@@ -164,7 +162,7 @@ or just 'p' otherwise.."
                                     unless (or (member t *allowed-slot-definition-properties*)
                                                (member el *allowed-slot-definition-properties*))
                                     collect el))
-            (slot-name-warning-triggered? #f))
+            (slot-name-warning-triggered? nil))
         (when unknown-keywords
           (style-warn "Unexpected properties in slot definition ~S.~%~
                        The unexpected properties are ~S.~%~
@@ -178,7 +176,7 @@ or just 'p' otherwise.."
                (maybe-warn-for-slot-name ()
                  (unless (or slot-name-warning-triggered?
                              (eq (symbol-package name) *package*))
-                   (setf slot-name-warning-triggered? #t)
+                   (setf slot-name-warning-triggered? t)
                    #+nil ;; this generates too many warnings which makes it kinda pointless
                    (style-warn "defclass* for a slot name ~A while its home package is not *package* (~A). Default generated names will be interned into *package*!"
                                (fully-qualified-symbol-name name) *package*))))
