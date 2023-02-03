@@ -290,7 +290,8 @@ or just 'p' otherwise.."
                                clean-options)))
           (if (or *symbols-to-export*
                   *export-class-name-p*
-                  *predicate-name-transformer*)
+                  (and *automatic-predicates-p*
+                       *predicate-name-transformer*))
               `(progn
                  ,result
                  ,@(when (and *automatic-predicates-p*
