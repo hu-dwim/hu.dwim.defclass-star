@@ -297,8 +297,11 @@ or just 'p' otherwise.."
                  ,@(when (and *automatic-predicates-p*
                               *predicate-name-transformer*)
                      (let ((pred-name (funcall *predicate-name-transformer* name)))
-                       `((defun ,pred-name (object)
-                           (typep object ',name))
+                       `((unless (fboundp ',pred-name)
+                           (defun ,pred-name (object)
+                             #+sbcl
+                             (declare (sb-ext:muffle-conditions style-warning))
+                             (typep object ',name)))
                          ;; TODO shouldn't *export-predicate-name-p*
                          ;; get its default from the "e" flag? (def
                          ;; (class e) foo-bar ...) doesn't export
