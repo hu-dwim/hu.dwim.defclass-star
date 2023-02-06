@@ -19,8 +19,8 @@
            #:make-name-transformer
            #:*allowed-slot-definition-properties*)
   (:documentation "This library offers two helper macros:
-- define-class
-- define-condition*
+- `nclass:define-class'
+- `nclass:define-condition*'.
 
 Compared to the standard macros, they accept extra options and slot definition
 is smarter.
@@ -36,10 +36,12 @@ Example:
   (:accessor-name-transformer #'nclass:default-accessor-name-transformer))
 
 In the above, all slot accessors are automatically defined using
-`default-accessor-name-transformer'.  They are also exported together with the
+`nclass:default-accessor-name-transformer'.  They are also exported together with the
 class name.
 The initarg default to the keyword version of the slot symbol, unless it's
 explicitly set to NIL.
 
 Notice that the second value of the slot definition, if not an option, is then
-the initform."))
+the initform.
+
+See `nclass:define-class' for more details."))

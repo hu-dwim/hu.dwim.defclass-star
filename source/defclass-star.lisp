@@ -385,9 +385,76 @@ It takes 3 arguments:
               result))))))
 
 (defmacro define-class (name supers slots &rest options)
-  "The default types can be automatically inferred by the function specified
-in the `:type-inference' option, which defaults to `*type-inference*'.
-The type can still be specified manually with the `:type' slot option."
+  "Convenience wrapper of `defclass'.
+
+It automates a lot of boilerplate (like exporting all the accessors of a class)
+plus adds some new features.
+
+
+
+Slot options:
+
+- The initform can be specified as the second value.
+
+- `:accessor', `:reader' and `:writer' can be set to either a name, NIL or T.
+  If NIL, the method is not generated.
+  If T, the method is generated using the `:accessor-name-transformer' class option value.
+
+- The `:export' option allows to control the slot-name export on a per-slot basis.
+
+
+
+New class options (defaults are NIL unless specified):
+
+- `:slot-definition-transformer' (default: `default-slot-definition-transformer').
+  A function that takes a SLOT-DEFINITION and returns a new one.
+
+- `:accessor-name-package': The package of the generated accessors.  See
+  `:accessor-name-transformer'.  Some special values are accepted:
+  - `:slot-name': The package of the slot-name.
+  - `:default': The current package.
+
+- `:accessor-name-transformer' (default `default-accessor-name-transformer').
+
+  A function of (SLOT-NAME SLOT-DEFINITION) arguments that returns the accessor
+  name (a symbol).  Other transformer: `dwim-accessor-name-transformer'.
+
+- `:automatic-accessors-p': Whether to generate accessor names automatically for
+  all slots.
+
+- `:initarg-name-transformer' (default: `default-initarg-name-transformer'.)
+
+  A function of (SLOT-NAME SLOT-DEFINITION) arguments that returns the accessor
+  name (a symbol.
+
+- `:automatic-initargs-p' (default: T): Whether to generate accessor names
+  automatically for all slots.
+
+- `:predicate-name-transformer' (default: `default-predicate-name-transformer').
+
+  A function of (SLOT-NAME SLOT-DEFINITION) arguments that returns the predicate
+  name (a symbol).
+
+- `:automatic-predicates-p' (default: T): Whether to generate a predicate
+  for the class.
+
+- `:type-inference' (default: `default-type-inference').
+
+  Function that returns the type of a slot definition (with an initform).  It
+takes 3 arguments:
+
+  - The initform.
+  - The slot name.
+  - The rest of the slot definition.
+
+- `:automatic-types-p': Whether to generate the type automatically for all
+  slots.  The type can still be specified manually with the `:type' slot option.
+
+- Self-explanatory export options (all NIL by default):
+  - `:export-class-name-p'
+  - `:export-accessor-names-p'
+  - `:export-slot-names-p'
+  - `:export-predicate-name'"
   (build-defclass-like-expansion
    name supers slots options
    (lambda (processed-slots clean-options)
@@ -396,6 +463,8 @@ The type can still be specified manually with the `:type' slot option."
         ,@clean-options))))
 
 (defmacro define-condition* (name supers slots &rest options)
+  "To `define-condition' what `define-class' is to `defclass'.
+See `define-class' for more details."
   (build-defclass-like-expansion
    name supers slots options
    (lambda (processed-slots clean-options)
