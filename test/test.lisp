@@ -36,6 +36,35 @@
      (assert-error 'error
                    (nclass::process-slot-definition ',form) ,@extras)))
 
+(define-class foo ()
+  ((name "fooname")))
+
+(define-test simple-class ()
+  (assert-string= "fooname"
+                  (let ((foo (make-instance 'foo)))
+                    (name-of foo))))
+
+(define-class bar ()
+  ((name "fooname")
+   (age :accessor this-age)
+   (address :accessor nil))
+  (:accessor-name-transformer (lambda (name def) (declare (ignore def)) name)))
+
+(define-test simple-class-with-custom-accessors ()
+  (make-instance 'bar)
+  (assert-true (fboundp 'name))
+  (assert-true (fboundp 'this-age))
+  (assert-false (fboundp 'address)))
+
+(define-class foo-no-accessors ()
+  ((name-no-acc :type string))
+  (:automatic-accessors-p nil))
+
+(define-test no-accessor ()
+  (assert-false (progn
+                  (make-instance 'foo-no-accessors)
+                  (fboundp 'name-no-acc-of))))
+
 (define-test nop (:contexts '(with-test-class-options))
   (assert-expands
    (defclass some-class (some super classes)
@@ -43,9 +72,9 @@
      (1 2)
      (3 4))
    (define-class some-class (some super classes)
-       ()
-       (1 2)
-       (3 4))))
+     ()
+     (1 2)
+     (3 4))))
 
 (define-test accessors (:contexts '(with-test-class-options))
   (assert-slot= (slot1 :accessor slot1-custom :initarg slot1-custom)
