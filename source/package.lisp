@@ -16,4 +16,29 @@
            #:always-dashed-predicate-name-transformer
            #:question-mark-predicate-name-transformer
            #:make-name-transformer
-           #:*allowed-slot-definition-properties*))
+           #:*allowed-slot-definition-properties*)
+  (:documentation "This library offers two helper macros:
+- define-class
+- define-condition*
+
+Compared to the standard macros, they accept extra options and slot definition
+is smarter.
+
+Example:
+
+(define-class foo ()
+  ((slot1 :initarg nil)
+   (slot2 \"hello!\")
+   (unexported-slot :export nil))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'nclass:default-accessor-name-transformer))
+
+In the above, all slot accessors are automatically defined using
+`default-accessor-name-transformer'.  They are also exported together with the
+class name.
+The initarg default to the keyword version of the slot symbol, unless it's
+explicitly set to NIL.
+
+Notice that the second value of the slot definition, if not an option, is then
+the initform."))
