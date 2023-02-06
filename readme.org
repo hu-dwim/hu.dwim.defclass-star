@@ -17,7 +17,7 @@ It's a fork of [[https://github.com/hu-dwim/hu.dwim.defclass-star][hu.dwim.defcl
   =defclass*=.
 
 - This library offers new features that wouldn't be accepted upstream, like
-  https://github.com/hu-dwim/hu.dwim.defclass-star/pull/3.
+  [[https://github.com/hu-dwim/hu.dwim.defclass-star/pull/3][type inference]].
 
 ** Examples
 
@@ -47,6 +47,7 @@ See the [[file:package.lisp][package]] documentation for a usage guide and more 
   optional features have been removed.
 - New predicate name transformers =always-dashed-predicate-name-transformer= and
   =question-mark-predicate-name-transformer=.
+- New type inference options: =:automatic-types-p= and =:type-inference=.
 
 ** Alternatives
 

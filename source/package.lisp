@@ -15,6 +15,7 @@
            #:default-predicate-name-transformer
            #:always-dashed-predicate-name-transformer
            #:question-mark-predicate-name-transformer
+           #:default-type-inference
            #:make-name-transformer
            #:*allowed-slot-definition-properties*)
   (:documentation "This library offers two helper macros:

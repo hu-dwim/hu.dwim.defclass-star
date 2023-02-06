@@ -55,6 +55,56 @@ or just 'p' otherwise.."
   (declare (ignore args))
   (intern (format nil "~a?" name) (symbol-package name)))
 
+(defun default-type-inference (initform name definition)
+  "Return type of INITFORM.
+This is like `type-of' but returns less specialized types for some common
+subtypes, e.g.  for \"\" return 'string instead of `(SIMPLE-ARRAY CHARACTER
+\(0))'.
+
+Note that in a slot definition, '() is inferred to be a list while NIL is
+inferred to be a boolean.
+
+Non-basic form types are not inferred (returns nil).
+Non-basic scalar types are derived to their own type (with `type-of')."
+  (declare (ignore name definition))
+  (cond
+    ((and (consp initform)
+          (eq (first initform) 'quote)
+          (symbolp (second initform)))
+     (if (eq (type-of (second initform)) 'null)
+         'list                          ; The empty list.
+         'symbol))
+    ((and (consp initform)
+          (eq (first initform) 'function))
+     'function)
+    ((and (consp initform)
+          (not (eq (first initform) 'quote)))
+     ;; Non-basic form.
+     nil)
+    ;; This is necessary to prevent nil-initform slots to be recognized as
+    ;; boolean-typed ones. Nil does not guarantee any type.
+    ((null initform)
+     nil)
+    (t (let* ((type (if (symbolp initform)
+                        (handler-case
+                            ;; We can get type of externally defined symbol.
+                            (type-of (eval initform))
+                          (error ()
+                            ;; Don't infer type if symbol is not yet defined.
+                            nil))
+                        (type-of initform))))
+         (if type
+             (flet ((derive-type (general-type)
+                      (when (subtypep type general-type)
+                        general-type)))
+               (or (some #'derive-type '(string boolean list array hash-table integer
+                                         complex number))
+                   ;; Only allow objects of the same type by default.
+                   ;; We could have returned nil to inhibit the generation of a
+                   ;; :type property.
+                   type))
+             nil)))))
+
 ;; these control whether the respective names should be exported from *package* (which is sampled at macroexpand time)
 (defvar *export-class-name-p* nil)
 (defvar *export-accessor-names-p* nil)
@@ -63,6 +113,14 @@ or just 'p' otherwise.."
 
 (defvar *initarg-name-transformer* 'default-initarg-name-transformer)
 (defvar *automatic-initargs-p* t)
+
+(defvar *type-inference* 'default-type-inference
+  "Function that returns the type of a slot definition (with an initform).
+It takes 3 arguments:
+- The initform.
+- The slot name.
+- The rest of the slot definition.")
+(defvar *automatic-types-p* nil)
 
 (defvar *slot-definition-transformer* 'default-slot-definition-transformer)
 
@@ -151,10 +209,10 @@ or just 'p' otherwise.."
             () "Found non-keywords in ~S" definition)
     (destructuring-bind (&key (accessor 'missing) (initarg 'missing)
                               (reader 'missing) (writer 'missing)
-                              (export 'missing)
+                              (export 'missing) (type 'missing)
                               &allow-other-keys)
         definition
-      (remf-keywords definition :accessor :reader :writer :initform :initarg :export)
+      (remf-keywords definition :accessor :reader :writer :initform :initarg :export :type)
       (let ((unknown-keywords (loop for el :in definition :by #'cddr
                                     unless (or (member t *allowed-slot-definition-properties*)
                                                (member el *allowed-slot-definition-properties*))
@@ -210,6 +268,14 @@ or just 'p' otherwise.."
                                      (list :initarg (funcall *initarg-name-transformer* name entire-definition)))
                                    (when initarg
                                      (list :initarg initarg)))
+                               (if (eq type 'missing)
+                                   (when *automatic-types-p*
+                                     (let ((result-type (funcall *type-inference* initform name entire-definition)))
+                                       (when result-type
+                                         (list :type result-type))))
+                                   (when type
+                                     (list :type type)))
+
                                definition))
             (when (provided-p accessor)
               (pushnew accessor *accessor-names*))
@@ -261,6 +327,8 @@ or just 'p' otherwise.."
          :automatic-predicates-p *automatic-predicates-p*
          :predicate-name-transformer *predicate-name-transformer*
          :export-predicate-name *export-predicate-name-p*
+         :automatic-types-p *automatic-types-p*
+         :type-inference *type-inference*
          :slot-definition-transformer *slot-definition-transformer*)))
     (values binding-names binding-values (nreverse clean-options))))
 
@@ -328,6 +396,9 @@ or just 'p' otherwise.."
               result))))))
 
 (defmacro define-class (name supers slots &rest options)
+  "The default types can be automatically inferred by the function specified
+in the `:type-inference' option, which defaults to `*type-inference*'.
+The type can still be specified manually with the `:type' slot option."
   (build-defclass-like-expansion
    name supers slots options
    (lambda (processed-slots clean-options)

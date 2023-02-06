@@ -22,7 +22,7 @@
 (defsystem "nclasses/tests"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
-  :depends-on (nclasses)
+  :depends-on (nclasses moptilities)
   :targets (:package :nclass/test)
   :pathname "test/"
   :components ((:file "package")

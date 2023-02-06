@@ -208,3 +208,45 @@
       (:use :nclass))
     (defpackage :nclass/test.pkg2
       (:use :nclass))))
+
+(defvar street-name "bar")
+(define-test type-inference ()
+  (define-class foo-type-infer ()
+    ((name "foo")
+     (nickname street-name)
+     (age 1)
+     (height 2.0)
+     (width 2 :type number)
+     (lisper t)
+     (nil-is-not-bool nil)
+     (empty-list '())
+     (nonempty-list '(1 2 3))
+     (mark :foo)
+     (sym 'sims)
+     (fun #'list)
+     (composite (error "Should not eval, type should not be inferred")))
+    (:automatic-types-p t))
+  (assert-eq 'string
+             (getf (mopu:slot-properties 'foo-type-infer 'name) :type))
+  (assert-eq 'string
+             (getf (mopu:slot-properties 'foo-type-infer 'nickname) :type))
+  (assert-eq 'integer
+             (getf (mopu:slot-properties 'foo-type-infer 'age) :type))
+  (assert-eq 'number
+             (getf (mopu:slot-properties 'foo-type-infer 'height) :type))
+  (assert-eq 'number
+             (getf (mopu:slot-properties 'foo-type-infer 'width) :type))
+  (assert-eq 'boolean
+             (getf (mopu:slot-properties 'foo-type-infer 'lisper) :type))
+  (assert (not (eq 'boolean
+                   (getf (mopu:slot-properties 'foo-type-infer 'nil-is-not-bool) :type))))
+  (assert-eq 'list
+             (getf (mopu:slot-properties 'foo-type-infer 'empty-list) :type))
+  (assert-eq 'list
+             (getf (mopu:slot-properties 'foo-type-infer 'nonempty-list) :type))
+  (assert-eq 'symbol
+             (getf (mopu:slot-properties 'foo-type-infer 'sym) :type))
+  (assert-eq 'function
+             (getf (mopu:slot-properties 'foo-type-infer 'fun) :type))
+  (assert-eq nil
+             (getf (mopu:slot-properties 'foo-type-infer 'composite) :type)))
