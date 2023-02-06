@@ -5,8 +5,8 @@
 
 (defpackage :nclass
   (:use :common-lisp)
-  (:export #:defclass*
-           #:defcondition*
+  (:export #:define-class
+           #:define-condition*
            ;; transformers
            #:default-accessor-name-transformer
            #:dwim-accessor-name-transformer

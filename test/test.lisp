@@ -42,7 +42,7 @@
      ()
      (1 2)
      (3 4))
-   (defclass* some-class (some super classes)
+   (define-class some-class (some super classes)
        ()
        (1 2)
        (3 4))))
@@ -72,14 +72,14 @@
                     ((slot1 :accessor slot1-zork :initarg :slot1))
                     (1 2)
                     (3 4))
-                  (defclass* some-class (some super classes)
+                  (define-class some-class (some super classes)
                       ((slot1))
                       (1 2)
                       (:accessor-name-transformer (make-name-transformer name "-ZORK"))
                       (3 4)))
   (assert-expands (defclass some-class (some super classes)
                     ((slot1 :accessor nclass/test.dummy::slot1-of :initarg :slot1)))
-                  (defclass* some-class (some super classes)
+                  (define-class some-class (some super classes)
                       ((slot1))
                       (:accessor-name-package (find-package :nclass/test.dummy)))))
 
@@ -88,7 +88,7 @@
                     ((slot1 :accessor slot1-of :initarg :slot1 :documentation "zork"))
                     (1 2)
                     (3 4))
-                  (defclass* some-class (some super classes)
+                  (define-class some-class (some super classes)
                       ((slot1 :unbound :documentation "zork"))
                       (1 2)
                       (3 4)))
@@ -96,7 +96,7 @@
                     ((slot1 :initform 42 :documentation "zork"))
                     (1 2)
                     (3 4))
-                  (defclass* some-class (some super classes)
+                  (define-class some-class (some super classes)
                       ((slot1 42 :documentation "zork"))
                       (1 2)
                       (:automatic-accessors-p nil)
@@ -110,7 +110,7 @@
                   (eval-when (:compile-toplevel :load-toplevel :execute)
                     (export '(some-class slot2 slot2-custom slot1 slot1-of) ,(package-name *package*)))
                   (find-class 'some-class nil))
-                (macroexpand-1 '(defclass* some-class (some super classes)
+                (macroexpand-1 '(define-class some-class (some super classes)
                                     ((slot1 42 :documentation "zork")
                                      (slot2 :unbound :accessor slot2-custom)
                                      (slot3 :unbound :accessor nil :export :accessor))
@@ -126,7 +126,7 @@
                    (eval-when (:compile-toplevel :load-toplevel :execute)
                      (export '(some-class slot3-of slot2 slot2-custom slot1) ,(package-name *package*)))
                    (find-class 'some-class nil))
-                (macroexpand-1 '(defclass* some-class (some super classes)
+                (macroexpand-1 '(define-class some-class (some super classes)
                                  ((slot1 42 :documentation "zork" :export :slot)
                                   (slot2 :unbound :accessor slot2-custom)
                                   (slot3 42 :export :accessor)
@@ -147,7 +147,7 @@
   (assert-slot-errors (slot1 foo bar))
 
   (assert-error 'error
-                (macroexpand-1 '(defclass* some-class ()
+                (macroexpand-1 '(define-class some-class ()
                                  ((slot1))
                                  (:accessor-name-transformer 'default-accessor-name-transformer many)))))
 
@@ -156,12 +156,12 @@
          (pkg2 (find-package :nclass/test.pkg2))
          (exp1 (let ((*package* pkg1))
                  (macroexpand-1
-                  '(defclass* nclass/test.pkg1::foo ()
+                  '(define-class nclass/test.pkg1::foo ()
                     ((nclass/test.pkg1::foo-name))
                     (:export-slot-names-p nil)))))
          (exp2 (let ((*package* pkg2))
                  (macroexpand-1
-                  '(defclass* nclass/test.pkg2::bar
+                  '(define-class nclass/test.pkg2::bar
                     (nclass/test.pkg1::foo)
                     ;; override the slot in the superclass
                     ((nclass/test.pkg1::foo-name :initform ""))

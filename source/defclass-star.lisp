@@ -175,7 +175,7 @@ or just 'p' otherwise.."
                              (eq (symbol-package name) *package*))
                    (setf slot-name-warning-triggered? t)
                    #+nil ;; this generates too many warnings which makes it kinda pointless
-                   (style-warn "defclass* for a slot name ~A while its home package is not *package* (~A). Default generated names will be interned into *package*!"
+                   (style-warn "define-class for a slot name ~A while its home package is not *package* (~A). Default generated names will be interned into *package*!"
                                (fully-qualified-symbol-name name) *package*))))
           (prog1
               (funcall *slot-definition-transformer*
@@ -272,7 +272,7 @@ or just 'p' otherwise.."
   (declare (ignore supers))
   #+nil ;; this generates warnings where defclass would not, delme eventually?
   (unless (eq (symbol-package name) *package*)
-    (style-warn "defclass* for ~A while its home package is not *package* (~A)"
+    (style-warn "define-class for ~A while its home package is not *package* (~A)"
                 (fully-qualified-symbol-name name) *package*))
   (let ((*accessor-names* nil)
         (*slot-names* nil)
@@ -322,7 +322,7 @@ or just 'p' otherwise.."
                        (find-class ',name nil))))
             result))))))
 
-(defmacro defclass* (name supers slots &rest options)
+(defmacro define-class (name supers slots &rest options)
   (build-defclass-like-expansion
    name supers slots options
    (lambda (processed-slots clean-options)
@@ -330,7 +330,7 @@ or just 'p' otherwise.."
         ,processed-slots
         ,@clean-options))))
 
-(defmacro defcondition* (name supers slots &rest options)
+(defmacro define-condition* (name supers slots &rest options)
   (build-defclass-like-expansion
    name supers slots options
    (lambda (processed-slots clean-options)
