@@ -27,7 +27,14 @@ A basic session:
 
 #+begin_src lisp
   (define-class foo ()
-    ())
+    ((slot1 :initarg nil)
+     (slot2 \"hello!\")
+     (unexported-slot :export nil))
+    (:export-class-name-p t)
+    (:export-accessor-names-p t)
+    (:accessor-name-transformer #'nclass:default-accessor-name-transformer))
+
+  (make-instance 'foo :my-slot1 17)
 #+end_src
 
 See the [[file:package.lisp][package]] documentation for a usage guide and more examples.
@@ -40,6 +47,19 @@ See the [[file:package.lisp][package]] documentation for a usage guide and more 
   optional features have been removed.
 - New predicate name transformers =always-dashed-predicate-name-transformer= and
   =question-mark-predicate-name-transformer=.
+
+** Alternatives
+
+=defclass/std= is another popular library with a similar goal, but with more
+insistance on conciseness, maybe at the expanse of readability.  In particular,
+it implements a way to specify slots by properties which may seem unnatural (we
+read slots by their name, not by their properties).
+
+** Implementation notes
+
+Metaclasses would not be very useful here since most of our features need to be
+enacted at compile-time, while metaclasses are mostly useful on classe
+/instances/.
 
 ** History
 
