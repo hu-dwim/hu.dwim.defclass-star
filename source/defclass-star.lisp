@@ -332,13 +332,7 @@ It takes 3 arguments:
          :slot-definition-transformer *slot-definition-transformer*)))
     (values binding-names binding-values (nreverse clean-options))))
 
-(defun build-defclass-like-expansion (name supers slots options expansion-builder
-                                      &key
-                                      (export-class-name *export-class-name-p*)
-                                      (export-accessor-names *export-accessor-names-p*)
-                                      (export-slot-names *export-slot-names-p*)
-                                      (export-predicate-name *export-predicate-name-p*)
-                                      (predicate-name-transformer *predicate-name-transformer*))
+(defun build-defclass-like-expansion (name supers slots options expansion-builder)
   (declare (ignore supers))
   #+nil ;; this generates warnings where defclass would not, delme eventually?
   (unless (eq (symbol-package name) *package*)
@@ -346,12 +340,7 @@ It takes 3 arguments:
                 (fully-qualified-symbol-name name) *package*))
   (let ((*accessor-names* nil)
         (*slot-names* nil)
-        (*symbols-to-export* nil)
-        (*export-class-name-p* export-class-name)
-        (*export-accessor-names-p* export-accessor-names)
-        (*export-slot-names-p* export-slot-names)
-        (*export-predicate-name-p* export-predicate-name)
-        (*predicate-name-transformer* predicate-name-transformer))
+        (*symbols-to-export* nil))
     (multiple-value-bind (binding-names binding-values clean-options)
         (extract-options-into-bindings options)
       (progv binding-names (mapcar #'eval binding-values)
