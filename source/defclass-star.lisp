@@ -318,9 +318,9 @@ or just 'p' otherwise.."
                                       (append (when *export-class-name-p*
                                                 (list name))
                                        *symbols-to-export*)))
-                                 ,(package-name *package*)))
-                       (find-class ',name nil))))
-            result))))))
+                                 ,(package-name *package*)))))
+                 (find-class ',name nil))
+              result))))))
 
 (defmacro define-class (name supers slots &rest options)
   (build-defclass-like-expansion
