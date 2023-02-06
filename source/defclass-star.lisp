@@ -259,6 +259,8 @@ or just 'p' otherwise.."
          :export-accessor-names-p *export-accessor-names-p*
          :export-slot-names-p *export-slot-names-p*
          :automatic-predicates-p *automatic-predicates-p*
+         :predicate-name-transformer *predicate-name-transformer*
+         :export-predicate-name *export-predicate-name-p*
          :slot-definition-transformer *slot-definition-transformer*)))
     (values binding-names binding-values (nreverse clean-options))))
 
