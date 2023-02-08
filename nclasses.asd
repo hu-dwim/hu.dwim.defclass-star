@@ -5,6 +5,7 @@
   :version "0.0.0"
   :description "Simplify class like definitions with define-class and friends."
   :author "dwim.hu & Atlas Engineer LLC"
+  :maintainer "Atlas Engineer LLC"
   :homepage "https://github.com/atlas-engineer/nclasses"
   :license "Public Domain"
   :serial t
