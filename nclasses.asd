@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: Public Domain
 
 (defsystem "nclasses"
-  :version "0.0.0"
+  :version "0.1.0"
   :description "Simplify class like definitions with define-class and friends."
   :author "dwim.hu & Atlas Engineer LLC"
   :maintainer "Atlas Engineer LLC"
