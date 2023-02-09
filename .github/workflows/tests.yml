@@ -5,9 +5,9 @@ name: Tests
 # https://github.community/t/how-to-trigger-an-action-on-push-or-pull-request-but-not-both/16662/15
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
     types: [ opened, synchronize, closed ]
 
 jobs:
