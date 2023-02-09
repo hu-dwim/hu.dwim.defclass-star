@@ -1,24 +1,15 @@
-;;; -*- mode: Lisp; Syntax: Common-Lisp; -*-
-;;;
-;;; Copyright (c) 2009 by the authors.
-;;;
-;;; See LICENCE for details.
+;;;; SPDX-FileCopyrightText: hu.dwim & Atlas Engineer LLC
+;;;; SPDX-License-Identifier: Public Domain
 
 (in-package :common-lisp-user)
 
-(defpackage :hu.dwim.defclass-star/test
-  (:use :hu.dwim.common
-        :hu.dwim.defclass-star
-        :hu.dwim.stefil))
+(defpackage :nclasses/test
+  (:use :cl :nclasses :lisp-unit2))
 
-(defpackage :hu.dwim.defclass-star/test.dummy)
+(defpackage :nclasses/test.dummy)
 
-(defpackage :hu.dwim.defclass-star/test.pkg1
-  (:use :hu.dwim.common
-        :hu.dwim.defclass-star
-        :hu.dwim.stefil))
+(defpackage :nclasses/test.pkg1
+  (:use :nclasses))
 
-(defpackage :hu.dwim.defclass-star/test.pkg2
-  (:use :hu.dwim.common
-        :hu.dwim.defclass-star
-        :hu.dwim.stefil))
+(defpackage :nclasses/test.pkg2
+  (:use :nclasses))
