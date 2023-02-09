@@ -48,6 +48,13 @@ See the [[file:package.lisp][package]] documentation for a usage guide and more 
 - New predicate name transformers =always-dashed-predicate-name-transformer= and
   =question-mark-predicate-name-transformer=.
 - New type inference options: =:automatic-types-p= and =:type-inference=.
+- Default accessor transformer now follows the slot name.
+  hu.dwim.defclass-star default accessor is available as
+  =dwim-accessor-name-transformer=.
+- Bug fixes:
+  - No longer try to export =NIL=.
+  - Always return the class.
+  - Avoid unneeded =progn=.
 
 ** Alternatives
 
