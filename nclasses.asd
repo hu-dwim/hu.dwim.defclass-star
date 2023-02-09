@@ -24,7 +24,7 @@
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
   :depends-on (nclasses moptilities)
-  :targets (:package :nclass/test)
+  :targets (:package :nclasses/test)
   :pathname "test/"
   :components ((:file "package")
                (:file "test" :depends-on ("package"))))
@@ -33,4 +33,4 @@
   :defsystem-depends-on ("nasdf")
   :class :nasdf-compilation-test-system
   :depends-on (nclasses)
-  :packages (:nclass))
+  :packages (:nclasses))

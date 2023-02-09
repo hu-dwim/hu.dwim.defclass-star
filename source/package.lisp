@@ -3,7 +3,7 @@
 
 (in-package :common-lisp-user)
 
-(defpackage :nclass
+(defpackage :nclasses
   (:use :common-lisp)
   (:export #:define-class
            #:define-condition*
@@ -19,8 +19,8 @@
            #:make-name-transformer
            #:*allowed-slot-definition-properties*)
   (:documentation "This library offers two helper macros:
-- `nclass:define-class'
-- `nclass:define-condition*'.
+- `nclasses:define-class'
+- `nclasses:define-condition*'.
 
 Compared to the standard macros, they accept extra options and slot definition
 is smarter.
@@ -33,10 +33,10 @@ Example:
    (unexported-slot :export nil))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'nclass:default-accessor-name-transformer))
+  (:accessor-name-transformer #'nclasses:default-accessor-name-transformer))
 
 In the above, all slot accessors are automatically defined using
-`nclass:default-accessor-name-transformer'.  They are also exported together with the
+`nclasses:default-accessor-name-transformer'.  They are also exported together with the
 class name.
 The initarg default to the keyword version of the slot symbol, unless it's
 explicitly set to NIL.
@@ -44,4 +44,4 @@ explicitly set to NIL.
 Notice that the second value of the slot definition, if not an option, is then
 the initform.
 
-See `nclass:define-class' for more details."))
+See `nclasses:define-class' for more details."))

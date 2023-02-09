@@ -3,13 +3,13 @@
 
 (in-package :common-lisp-user)
 
-(defpackage :nclass/test
-  (:use :cl :nclass :lisp-unit2))
+(defpackage :nclasses/test
+  (:use :cl :nclasses :lisp-unit2))
 
-(defpackage :nclass/test.dummy)
+(defpackage :nclasses/test.dummy)
 
-(defpackage :nclass/test.pkg1
-  (:use :nclass))
+(defpackage :nclasses/test.pkg1
+  (:use :nclasses))
 
-(defpackage :nclass/test.pkg2
-  (:use :nclass))
+(defpackage :nclasses/test.pkg2
+  (:use :nclasses))

@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: hu.dwim & Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: Public Domain
 
-(in-package :nclass)
+(in-package :nclasses)
 
 ;;; The content of this file is copied over from some other libraries to
 ;;; decrease the number of dependencies.

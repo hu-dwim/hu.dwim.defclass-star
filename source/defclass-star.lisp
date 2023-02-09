@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: dwim.hu & Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: Public Domain
 
-(in-package :nclass)
+(in-package :nclasses)
 
 (defmacro make-name-transformer (&rest elements)
   "Return an accessor name transformer.
