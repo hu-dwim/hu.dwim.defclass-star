@@ -156,6 +156,15 @@ It takes 3 arguments:
         (t *package*))))
 
 (defun default-accessor-name-transformer (name definition)
+  "Return an accessor name following the slot name NAME."
+  (declare (ignore definition))
+  name)
+
+(defun dwim-accessor-name-transformer (name definition)
+  "Return an accessor name using the slot name NAME suffixed with \"-OF\".
+If the slot is a boolean not ending with a question mark, it is suffixed with \"-P\" instead.
+If the slot ends with a question mark, the name is taken as is."
+  ;; This is `hu.dwim.defclass-star:default-accessor-name-transformer'.
   (let* ((type (getf definition :type))
          (package (slot-name-package name))
          (name-string (string name))
@@ -174,7 +183,10 @@ It takes 3 arguments:
        name)
       (t (concatenate-symbol name '#:-of package)))))
 
-(defun dwim-accessor-name-transformer (name definition)
+(defun question-mark-accessor-name-transformer (name definition)
+  "Return an accessor name using the slot name NAME suffixed with \"-OF\".
+If the slot is a boolean, it ensures the name is suffixed with \"?\"."
+  ;; This is `hu.dwim.defclass-star:dwim-accessor-name-transformer'.
   (let* ((type (getf definition :type))
          (package (slot-name-package name))
          (name-string (string name))

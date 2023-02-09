@@ -10,6 +10,7 @@
            ;; transformers
            #:default-accessor-name-transformer
            #:dwim-accessor-name-transformer
+           #:question-mark-accessor-name-transformer
            #:default-initarg-name-transformer
            #:default-slot-definition-transformer
            #:default-predicate-name-transformer

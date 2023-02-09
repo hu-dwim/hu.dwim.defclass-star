@@ -7,7 +7,7 @@
   "A context sets the class options to specific defaults."
   (let ((*package* #.*package*)
         (nclasses::*automatic-accessors-p* t)
-        (nclasses::*accessor-name-transformer* 'default-accessor-name-transformer)
+        (nclasses::*accessor-name-transformer* 'dwim-accessor-name-transformer)
         (nclasses::*automatic-initargs-p* t)
         (nclasses::*initarg-name-transformer* 'default-initarg-name-transformer)
         (nclasses::*export-class-name-p* nil)
@@ -42,7 +42,7 @@
 (define-test simple-class ()
   (assert-string= "fooname"
                   (let ((foo (make-instance 'foo)))
-                    (name-of foo))))
+                    (name foo))))
 
 (define-class bar ()
   ((name "fooname")
@@ -63,7 +63,7 @@
 (define-test no-accessor ()
   (assert-false (progn
                   (make-instance 'foo-no-accessors)
-                  (fboundp 'name-no-acc-of))))
+                  (fboundp 'name-no-acc))))
 
 (define-test nop (:contexts '(with-test-class-options))
   (assert-expands
