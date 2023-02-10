@@ -338,7 +338,7 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
          :export-slot-names-p *export-slot-names-p*
          :automatic-predicates-p *automatic-predicates-p*
          :predicate-name-transformer *predicate-name-transformer*
-         :export-predicate-name *export-predicate-name-p*
+         :export-predicate-name-p *export-predicate-name-p*
          :automatic-types-p *automatic-types-p*
          :type-inference *type-inference*
          :slot-definition-transformer *slot-definition-transformer*)))
