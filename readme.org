@@ -39,6 +39,21 @@ A basic session:
 
 See the [[file:package.lisp][package]] documentation for a usage guide and more examples.
 
+** Default class options
+
+If you want to change the default class options, say, for a package, you can
+simply define a wrapping macro (without importing =nclasses:define-start=):
+
+#+begin_src lisp
+  (defmacro define-class (name supers slots &rest options)
+    "`nclasses:define-star' with automatic types and always-dashed predicates."
+    `(nclasses:define-class ,name ,supers ,slots
+       ,@(append
+          '((:automatic-types-p t)
+            (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer))
+          options)))
+#+end_src
+
 ** Changes from =defclass-star=
 
 - Renamed =defclass*= to =define-class=.
