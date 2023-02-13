@@ -13,7 +13,22 @@
         (nclasses::*export-class-name-p* nil)
         (nclasses::*export-accessor-names-p* nil)
         (nclasses::*export-slot-names-p* nil)
-        (nclasses::*automatic-predicates-p* nil))
+        (nclasses::*automatic-predicates-p* nil)
+        (nclasses::*automatic-types-p* nil))
+    (funcall thunk)))
+
+(defun with-type-inheritence-class-options (thunk)
+  "A context sets the class options to specific defaults."
+  (let ((*package* #.*package*)
+        (nclasses::*automatic-accessors-p* t)
+        (nclasses::*accessor-name-transformer* 'dwim-accessor-name-transformer)
+        (nclasses::*automatic-initargs-p* t)
+        (nclasses::*initarg-name-transformer* 'default-initarg-name-transformer)
+        (nclasses::*export-class-name-p* nil)
+        (nclasses::*export-accessor-names-p* nil)
+        (nclasses::*export-slot-names-p* nil)
+        (nclasses::*automatic-predicates-p* nil)
+        (nclasses::*automatic-types-p* t))
     (funcall thunk)))
 
 (defmacro assert-slot= (expansion form &rest extras)
@@ -250,3 +265,54 @@
              (getf (mopu:slot-properties 'foo-type-infer 'fun) :type))
   (assert-eq nil
              (getf (mopu:slot-properties 'foo-type-infer 'composite) :type)))
+
+
+(define-class parent ()
+  ((name nil
+         :type (or null string))
+   (age nil
+        :type (or null number))))
+
+(define-test inherited-type-inference ()
+  (define-class child (parent)
+    ((name "foo" :type string)          ; inherited.
+     (age 17)                           ; inherited.
+     (bio "Dummy biography")))
+  (let ((c (make-instance 'child)))
+    ;; Perform some assignments: CCL can catch type errors here.
+    (setf (slot-value c 'age) 15)
+    #+ccl
+    (assert-error 'error
+                  (setf (slot-value c 'name) nil))
+    (assert-equal 'string
+                  (getf (mopu:slot-properties 'child 'name) :type))
+    ;; Given that the parent may or may not be finalized by then, we have to way
+    ;; to test it but checking it falls into a reliable set of options (NIL =
+    ;; parent not finalized, type = parent finalized).
+    (assert-true (member (getf (mopu:slot-properties 'child 'age) :type)
+                         (list nil '(or null number))
+                         :test #'equal))
+    (assert-true (member (getf (mopu:slot-properties 'child 'bio) :type)
+                         (list nil 'string)
+                         :test #'equal))))
+
+(define-class parent2 ()
+  ((name nil
+         :type (or null string))
+   (age nil
+        :type (or null number))))
+(closer-mop:ensure-finalized (find-class 'parent2))
+
+(define-test inherited-type-inference-after-finalized ()
+  (define-class child2 (parent2)
+    ((name "foo" :type string)
+     (age 17)
+     (bio "Dummy biography"))
+    (:automatic-types-p t))
+  (closer-mop:ensure-finalized (find-class 'child2))
+  (assert-equal '(or null number)
+                (getf (mopu:slot-properties 'child2 'age) :type))
+  (assert-equal 'string
+                (getf (mopu:slot-properties 'child2 'name) :type))
+  (assert-equal 'string
+                (getf (mopu:slot-properties 'child2 'bio) :type)))

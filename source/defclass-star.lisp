@@ -64,6 +64,10 @@ subtypes, e.g.  for \"\" return 'string instead of `(SIMPLE-ARRAY CHARACTER
 Note that in a slot definition, '() is inferred to be a list while NIL is
 inferred to be a boolean.
 
+If the slot is found in a finalized superclass, the inferred type is then that
+of the superclass.  If some superclass is not finalized, no type inference is
+performed.
+
 Non-basic form types are not inferred (returns nil).
 Non-basic scalar types are derived to their own type (with `type-of')."
   (declare (ignore name definition))
@@ -201,7 +205,24 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
   (declare (ignorable definition))
   (concatenate-symbol name #.(symbol-package :asdf)))
 
-(defun process-slot-definition (definition)
+(defun slot-type-maybe-inherited (initform slot-name definition superclasses)
+  (let ((all-parents-finalized-p
+          (and
+           (every (lambda (s) (find-class s nil)) superclasses)
+           (every #'closer-mop:class-finalized-p
+                  (mapcar (lambda (s) (find-class s nil)) superclasses)))))
+    (cond
+      ((and all-parents-finalized-p
+            (find slot-name (apply #'append (mapcar #'mopu:slot-names superclasses))))
+       (let ((parent (find (list slot-name) superclasses
+                           :key #'mopu:slot-names :test #'intersection)))
+         (when parent
+           (getf (mopu:slot-properties parent slot-name) :type))))
+      (all-parents-finalized-p
+       (funcall *type-inference* initform slot-name definition))
+      (t nil))))
+
+(defun process-slot-definition (definition &key superclasses)
   (unless (consp definition)
     (setf definition (list definition)))
   (let ((name (pop definition))
@@ -282,9 +303,10 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
                                      (list :initarg initarg)))
                                (if (eq type 'missing)
                                    (when *automatic-types-p*
-                                     (let ((result-type (funcall *type-inference* initform name entire-definition)))
-                                       (when result-type
-                                         (list :type result-type))))
+                                     (let ((type (slot-type-maybe-inherited
+                                                  initform name entire-definition superclasses)))
+                                       (when type
+                                         (list :type type))))
                                    (when type
                                      (list :type type)))
 
@@ -345,7 +367,6 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
     (values binding-names binding-values (nreverse clean-options))))
 
 (defun build-defclass-like-expansion (name supers slots options expansion-builder)
-  (declare (ignore supers))
   #+nil ;; this generates warnings where defclass would not, delme eventually?
   (unless (eq (symbol-package name) *package*)
     (style-warn "define-class for ~A while its home package is not *package* (~A)"
@@ -357,7 +378,11 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
         (extract-options-into-bindings options)
       (progv binding-names (mapcar #'eval binding-values)
         (let ((result (funcall expansion-builder
-                               (mapcar 'process-slot-definition slots)
+                               (mapcar (lambda (definition)
+                                         (process-slot-definition
+                                          definition
+                                          :superclasses supers))
+                                       slots)
                                clean-options)))
           (if (or *symbols-to-export*
                   *export-class-name-p*
@@ -455,7 +480,7 @@ New class options (defaults are NIL unless specified):
 - `:type-inference' (default: `default-type-inference').
 
   Function that returns the type of a slot definition (with an initform).  It
-takes 3 arguments:
+  takes 3 arguments:
 
   - The initform.
   - The slot name.

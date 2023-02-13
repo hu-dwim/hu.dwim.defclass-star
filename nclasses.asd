@@ -8,9 +8,10 @@
   :maintainer "Atlas Engineer LLC"
   :homepage "https://github.com/atlas-engineer/nclasses"
   :license "Public Domain"
-  :serial t
+  :depends-on (moptilities)
   :in-order-to ((test-op (test-op "nclasses/tests")
                          (test-op "nclasses/tests/compilation")))
+  :serial t
   :pathname "source/"
   :components ((:file "package")
                (:file "duplicates")
