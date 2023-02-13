@@ -71,6 +71,13 @@ simply define a wrapping macro (without importing =nclasses:define-start=):
   - Always return the class.
   - Avoid unneeded =progn=.
 
+** Change Log
+
+*** 0.2.0
+
+- Fix =export-predicate-name-p= class option.
+- Allow type inference to check for types in superclasses.
+
 ** Alternatives
 
 =defclass/std= is another popular library with a similar goal, but with more
