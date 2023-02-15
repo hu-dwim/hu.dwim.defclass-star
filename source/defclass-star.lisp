@@ -162,7 +162,7 @@ It takes 3 arguments:
 (defun default-accessor-name-transformer (name definition)
   "Return an accessor name following the slot name NAME."
   (declare (ignore definition))
-  name)
+  (intern (symbol-name name) (slot-name-package name)))
 
 (defun dwim-accessor-name-transformer (name definition)
   "Return an accessor name using the slot name NAME suffixed with \"-OF\".
