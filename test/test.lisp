@@ -225,27 +225,27 @@
     (let ((*package* pkg1))
       (eval
        '(define-class nclasses/test.pkg1::foo ()
-         ((nclasses/test.pkg1::foo-name :accessor nil)))))
+         ((nclasses/test.pkg1::foo-desc :accessor nil)))))
     (let ((*package* pkg2))
       (eval
        '(define-class nclasses/test.pkg2::bar (nclasses/test.pkg1::foo)
          ;; override the slot in the superclass
-         ((nclasses/test.pkg1::foo-name :initform "")))))
-    (assert-false (fboundp 'nclasses/test.pkg1::foo-name))
+         ((nclasses/test.pkg1::foo-desc :initform "")))))
+    (assert-false (fboundp 'nclasses/test.pkg1::foo-desc))
     (let ((*package* pkg2))
       (eval '(define-class nclasses/test.pkg2::baz (nclasses/test.pkg1::foo)
               ;; override the slot in the superclass
-              ((nclasses/test.pkg1::foo-name :initform ""
+              ((nclasses/test.pkg1::foo-desc :initform ""
                                              :accessor t)))))
-    (assert-false (fboundp 'nclasses/test.pkg1::foo-name))
+    (assert-false (fboundp 'nclasses/test.pkg1::foo-desc))
     (let ((*package* pkg2))
       (eval '(define-class nclasses/test.pkg2::qux (nclasses/test.pkg1::foo)
               ;; override the slot in the superclass
-              ((nclasses/test.pkg1::foo-name :initform ""
+              ((nclasses/test.pkg1::foo-desc :initform ""
                                              :accessor t))
               (:accessor-name-package :slot-name))))
-    (assert-true (fboundp 'nclasses/test.pkg1::foo-name))
-    (fmakunbound 'nclasses/test.pkg1::foo-name)))
+    (assert-true (fboundp 'nclasses/test.pkg1::foo-desc))
+    (fmakunbound 'nclasses/test.pkg1::foo-desc)))
 
 (define-test accessor-generation-from-foreign-package-dwim (:contexts '(with-test-class-options))
   (let* ((pkg1 (find-package :nclasses/test.pkg1))
@@ -253,37 +253,38 @@
     (let ((*package* pkg1))
       (eval
        '(define-class nclasses/test.pkg1::foo ()
-         ((nclasses/test.pkg1::foo-name :accessor nil))
+         ((nclasses/test.pkg1::foo-bio :accessor nil))
          (:accessor-name-transformer 'dwim-accessor-name-transformer))))
     (let ((*package* pkg2))
       (eval
        '(define-class nclasses/test.pkg2::bar (nclasses/test.pkg1::foo)
          ;; override the slot in the superclass
-         ((nclasses/test.pkg1::foo-name :initform ""))
+         ((nclasses/test.pkg1::foo-bio :initform ""))
          (:accessor-name-transformer 'dwim-accessor-name-transformer))))
-    (assert-true (fboundp 'nclasses/test.pkg2::foo-name-of))
-    (assert-false (fboundp 'nclasses/test.pkg1::foo-name-of))
+
+    (assert-true (fboundp 'nclasses/test.pkg2::foo-bio-of))
+    (assert-false (fboundp 'nclasses/test.pkg1::foo-bio-of))
     (let ((*package* pkg2))
       (eval '(define-class nclasses/test.pkg2::baz (nclasses/test.pkg1::foo)
               ;; override the slot in the superclass
-              ((nclasses/test.pkg1::foo-name :initform ""
+              ((nclasses/test.pkg1::foo-bio :initform ""
                                              :accessor t)))))
-    (assert-false (fboundp 'nclasses/test.pkg1::foo-name-of))
+    (assert-false (fboundp 'nclasses/test.pkg1::foo-bio-of))
     (let ((*package* pkg2))
       (eval '(define-class nclasses/test.pkg2::qux (nclasses/test.pkg1::foo)
               ;; override the slot in the superclass
-              ((nclasses/test.pkg1::foo-name :initform ""))
+              ((nclasses/test.pkg1::foo-bio :initform ""))
               (:accessor-name-package :slot-name))))
-    (assert-false (fboundp 'nclasses/test.pkg1::foo-name-of))
+    (assert-false (fboundp 'nclasses/test.pkg1::foo-bio-of))
     (let ((*package* pkg2))
       (eval '(define-class nclasses/test.pkg2::qux (nclasses/test.pkg1::foo)
               ;; override the slot in the superclass
-              ((nclasses/test.pkg1::foo-name :initform ""
+              ((nclasses/test.pkg1::foo-bio :initform ""
                                              :accessor t))
               (:accessor-name-package :slot-name))))
-    (assert-true (fboundp 'nclasses/test.pkg1::foo-name-of))
-    (fmakunbound 'nclasses/test.pkg1::foo-name-of)
-    (fmakunbound 'nclasses/test.pkg2::foo-name-of)))
+    (assert-true (fboundp 'nclasses/test.pkg1::foo-bio-of))
+    (fmakunbound 'nclasses/test.pkg1::foo-bio-of)
+    (fmakunbound 'nclasses/test.pkg2::foo-bio-of)))
 
 (defvar street-name "bar")
 (define-test type-inference ()
