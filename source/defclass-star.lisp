@@ -276,7 +276,9 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
                                (if (and (eq accessor 'missing)
                                         (eq reader 'missing)
                                         (eq writer 'missing))
-                                   (when *automatic-accessors-p*
+                                   (when (and *automatic-accessors-p*
+                                              (or (eq (symbol-package name) *package*)
+                                                  (not (eq *accessor-name-package* :slot-name))))
                                      (maybe-warn-for-slot-name)
                                      (setf accessor (transform-accessor))
                                      (list :accessor accessor))
@@ -460,6 +462,12 @@ New class options (defaults are NIL unless specified):
 
 - `:automatic-accessors-p': Whether to generate accessor names automatically for
   all slots.
+
+  As a special case, the accessor is not generated if all following conditions are met:
+  - `:accessor-name-package' is `:slot-name',
+  - slot name package is different from current package,
+  - if the `:accessor' slot option is not provided,
+
 
 - `:initarg-name-transformer' (default: `default-initarg-name-transformer'.)
 

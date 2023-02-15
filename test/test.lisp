@@ -216,13 +216,8 @@
       (eval exp2))
     (assert-eq :internal
                (nth-value 1 (find-symbol "FOO-NAME" :nclasses/test.pkg1)))
-    ;; REVIEW: Is the following the right way to re-initialize the packages?
-    (delete-package pkg1)
-    (delete-package pkg2)
-    (defpackage :nclasses/test.pkg1
-      (:use :nclasses))
-    (defpackage :nclasses/test.pkg2
-      (:use :nclasses))))
+    (fmakunbound 'nclasses/test.pkg1::foo-name-of)
+    (fmakunbound 'nclasses/test.pkg2::foo-name-of)))
 
 (define-test accessor-generation-from-foreign-package ()
   (let* ((pkg1 (find-package :nclasses/test.pkg1))
@@ -236,7 +231,6 @@
        '(define-class nclasses/test.pkg2::bar (nclasses/test.pkg1::foo)
          ;; override the slot in the superclass
          ((nclasses/test.pkg1::foo-name :initform "")))))
-
     (assert-false (fboundp 'nclasses/test.pkg1::foo-name))
     (let ((*package* pkg2))
       (eval '(define-class nclasses/test.pkg2::baz (nclasses/test.pkg1::foo)
@@ -251,13 +245,7 @@
                                              :accessor t))
               (:accessor-name-package :slot-name))))
     (assert-true (fboundp 'nclasses/test.pkg1::foo-name))
-    ;; REVIEW: Is the following the right way to re-initialize the packages?
-    (delete-package pkg1)
-    (delete-package pkg2)
-    (defpackage :nclasses/test.pkg1
-      (:use :nclasses))
-    (defpackage :nclasses/test.pkg2
-      (:use :nclasses))))
+    (fmakunbound 'nclasses/test.pkg1::foo-name)))
 
 (define-test accessor-generation-from-foreign-package-dwim (:contexts '(with-test-class-options))
   (let* ((pkg1 (find-package :nclasses/test.pkg1))
@@ -265,13 +253,15 @@
     (let ((*package* pkg1))
       (eval
        '(define-class nclasses/test.pkg1::foo ()
-         ((nclasses/test.pkg1::foo-name :accessor nil)))))
+         ((nclasses/test.pkg1::foo-name :accessor nil))
+         (:accessor-name-transformer 'dwim-accessor-name-transformer))))
     (let ((*package* pkg2))
       (eval
        '(define-class nclasses/test.pkg2::bar (nclasses/test.pkg1::foo)
          ;; override the slot in the superclass
-         ((nclasses/test.pkg1::foo-name :initform "")))))
-
+         ((nclasses/test.pkg1::foo-name :initform ""))
+         (:accessor-name-transformer 'dwim-accessor-name-transformer))))
+    (assert-true (fboundp 'nclasses/test.pkg2::foo-name-of))
     (assert-false (fboundp 'nclasses/test.pkg1::foo-name-of))
     (let ((*package* pkg2))
       (eval '(define-class nclasses/test.pkg2::baz (nclasses/test.pkg1::foo)
@@ -282,17 +272,18 @@
     (let ((*package* pkg2))
       (eval '(define-class nclasses/test.pkg2::qux (nclasses/test.pkg1::foo)
               ;; override the slot in the superclass
+              ((nclasses/test.pkg1::foo-name :initform ""))
+              (:accessor-name-package :slot-name))))
+    (assert-false (fboundp 'nclasses/test.pkg1::foo-name-of))
+    (let ((*package* pkg2))
+      (eval '(define-class nclasses/test.pkg2::qux (nclasses/test.pkg1::foo)
+              ;; override the slot in the superclass
               ((nclasses/test.pkg1::foo-name :initform ""
                                              :accessor t))
               (:accessor-name-package :slot-name))))
     (assert-true (fboundp 'nclasses/test.pkg1::foo-name-of))
-    ;; REVIEW: Is the following the right way to re-initialize the packages?
-    (delete-package pkg1)
-    (delete-package pkg2)
-    (defpackage :nclasses/test.pkg1
-      (:use :nclasses))
-    (defpackage :nclasses/test.pkg2
-      (:use :nclasses))))
+    (fmakunbound 'nclasses/test.pkg1::foo-name-of)
+    (fmakunbound 'nclasses/test.pkg2::foo-name-of)))
 
 (defvar street-name "bar")
 (define-test type-inference ()

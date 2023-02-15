@@ -70,6 +70,8 @@ simply define a wrapping macro (without importing =nclasses:define-start=):
   - No longer try to export =NIL=.
   - Always return the class.
   - Avoid unneeded =progn=.
+  - Do not generate accessors in foreign packages when =:accessor-name-package=
+    is =:slot-name= and =:accessor= is not provided.
 
 ** Change Log
 
