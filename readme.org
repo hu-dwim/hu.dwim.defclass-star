@@ -75,6 +75,12 @@ simply define a wrapping macro (without importing =nclasses:define-start=):
 
 ** Change Log
 
+*** 0.2.1
+
+- Fix =default-accessor-name-transformer= to follow =:accessor-name-package=.
+- Do not generate accessors in foreign packages when =:accessor-name-package=
+  is =:slot-name= and =:accessor= is not provided.
+
 *** 0.2.0
 
 - Fix =export-predicate-name-p= class option.
