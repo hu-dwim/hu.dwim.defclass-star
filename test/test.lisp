@@ -237,6 +237,7 @@
      (empty-list '())
      (nonempty-list '(1 2 3))
      (mark :foo)
+     (binding :unbound)
      (sym 'sims)
      (fun #'list)
      (composite (error "Should not eval, type should not be inferred")))
@@ -259,6 +260,10 @@
              (getf (mopu:slot-properties 'foo-type-infer 'empty-list) :type))
   (assert-eq 'list
              (getf (mopu:slot-properties 'foo-type-infer 'nonempty-list) :type))
+  (assert-eq 'keyword
+             (getf (mopu:slot-properties 'foo-type-infer 'mark) :type))
+  (assert-false
+   (getf (mopu:slot-properties 'foo-type-infer 'binding) :type))
   (assert-eq 'symbol
              (getf (mopu:slot-properties 'foo-type-infer 'sym) :type))
   (assert-eq 'function
