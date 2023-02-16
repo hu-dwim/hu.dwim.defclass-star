@@ -206,21 +206,20 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
   (concatenate-symbol name #.(symbol-package :asdf)))
 
 (defun slot-type-maybe-inherited (initform slot-name definition superclasses)
-  (if (null superclasses)
-      (funcall *type-inference* initform slot-name definition)
-      (let ((superclasses (mapcar (lambda (s) (find-class s nil)) superclasses)))
-        (when superclasses
-          (let ((all-parents-finalized-p (every #'closer-mop:class-finalized-p superclasses)))
-            (cond
-              ((and all-parents-finalized-p
-                    (find slot-name (apply #'append (mapcar #'mopu:slot-names superclasses))))
-               (let ((parent (find (list slot-name) superclasses
-                                   :key #'mopu:slot-names :test #'intersection)))
-                 (when parent
-                   (getf (mopu:slot-properties parent slot-name) :type))))
-              (all-parents-finalized-p
-               (funcall *type-inference* initform slot-name definition))
-              (t nil)))))))
+  (let* ((superclasses (mapcar (lambda (s) (find-class s nil)) superclasses))
+         (all-parents-finalized-p (and superclasses (every #'closer-mop:class-finalized-p superclasses))))
+    (cond
+      ((null superclasses)
+       (funcall *type-inference* initform slot-name definition))
+      ((and all-parents-finalized-p
+            (find slot-name (apply #'append (mapcar #'mopu:slot-names superclasses))))
+       (let ((parent (find (list slot-name) superclasses
+                           :key #'mopu:slot-names :test #'intersection)))
+         (when parent
+           (getf (mopu:slot-properties parent slot-name) :type))))
+      (all-parents-finalized-p
+       (funcall *type-inference* initform slot-name definition))
+      (t nil))))
 
 (defun process-slot-definition (definition &key superclasses)
   (unless (consp definition)
