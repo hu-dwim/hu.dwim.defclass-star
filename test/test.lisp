@@ -195,6 +195,8 @@
                                  ((slot1))
                                  (:accessor-name-transformer 'default-accessor-name-transformer many)))))
 
+;;; `fmakunbound' seems to be broken on ECL 21.2.1, since it results in the symbol not being reboundable.
+#-ecl
 (define-test skip-export-slot-name-from-foreign-package (:contexts '(with-test-class-options))
   (let* ((pkg1 (find-package :nclasses/test.pkg1))
          (pkg2 (find-package :nclasses/test.pkg2))
@@ -202,13 +204,15 @@
                  (macroexpand-1
                   '(define-class nclasses/test.pkg1::foo ()
                     ((nclasses/test.pkg1::foo-name))
-                    (:export-slot-names-p nil)))))
+                    (:export-slot-names-p nil)
+                    (:accessor-name-transformer 'dwim-accessor-name-transformer)))))
          (exp2 (let ((*package* pkg2))
                  (macroexpand-1
                   '(define-class nclasses/test.pkg2::bar
                     (nclasses/test.pkg1::foo)
                     ;; override the slot in the superclass
                     ((nclasses/test.pkg1::foo-name :initform ""))
+                    (:accessor-name-transformer 'dwim-accessor-name-transformer)
                     (:export-slot-names-p t))))))
     (let ((*package* pkg1))
       (eval exp1))
@@ -219,6 +223,7 @@
     (fmakunbound 'nclasses/test.pkg1::foo-name-of)
     (fmakunbound 'nclasses/test.pkg2::foo-name-of)))
 
+#-ecl
 (define-test accessor-generation-from-foreign-package ()
   (let* ((pkg1 (find-package :nclasses/test.pkg1))
          (pkg2 (find-package :nclasses/test.pkg2)))
@@ -247,6 +252,7 @@
     (assert-true (fboundp 'nclasses/test.pkg1::foo-desc))
     (fmakunbound 'nclasses/test.pkg1::foo-desc)))
 
+#-ecl
 (define-test accessor-generation-from-foreign-package-dwim (:contexts '(with-test-class-options))
   (let* ((pkg1 (find-package :nclasses/test.pkg1))
          (pkg2 (find-package :nclasses/test.pkg2)))
@@ -268,7 +274,7 @@
       (eval '(define-class nclasses/test.pkg2::baz (nclasses/test.pkg1::foo)
               ;; override the slot in the superclass
               ((nclasses/test.pkg1::foo-bio :initform ""
-                                             :accessor t)))))
+                                            :accessor t)))))
     (assert-false (fboundp 'nclasses/test.pkg1::foo-bio-of))
     (let ((*package* pkg2))
       (eval '(define-class nclasses/test.pkg2::qux (nclasses/test.pkg1::foo)
@@ -280,7 +286,7 @@
       (eval '(define-class nclasses/test.pkg2::qux (nclasses/test.pkg1::foo)
               ;; override the slot in the superclass
               ((nclasses/test.pkg1::foo-bio :initform ""
-                                             :accessor t))
+                                            :accessor t))
               (:accessor-name-package :slot-name))))
     (assert-true (fboundp 'nclasses/test.pkg1::foo-bio-of))
     (fmakunbound 'nclasses/test.pkg1::foo-bio-of)
@@ -378,8 +384,8 @@
     (:automatic-types-p t))
   (closer-mop:ensure-finalized (find-class 'child2))
   (assert-equal '(or null number)
-                (getf (mopu:slot-properties 'child2 'age) :type))
+                (getf (mopu:slot-properties (find-class 'child2) 'age) :type))
   (assert-equal 'string
-                (getf (mopu:slot-properties 'child2 'name) :type))
+                (getf (mopu:slot-properties (find-class 'child2) 'name) :type))
   (assert-equal 'string
-                (getf (mopu:slot-properties 'child2 'bio) :type)))
+                (getf (mopu:slot-properties (find-class 'child2) 'bio) :type)))
