@@ -207,7 +207,9 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
 
 (defun slot-type-maybe-inherited (initform slot-name definition superclasses)
   (let* ((superclasses (mapcar (lambda (s) (find-class s nil)) superclasses))
-         (all-parents-finalized-p (and superclasses (every #'closer-mop:class-finalized-p superclasses))))
+         (all-parents-finalized-p (and superclasses
+                                       (every #'identity superclasses)
+                                       (every #'closer-mop:class-finalized-p superclasses))))
     (cond
       ((null superclasses)
        (funcall *type-inference* initform slot-name definition))
