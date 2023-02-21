@@ -195,7 +195,7 @@
                                  ((slot1))
                                  (:accessor-name-transformer 'default-accessor-name-transformer many)))))
 
-;;; `fmakunbound' seems to be broken on ECL 21.2.1, since it results in the symbol not being reboundable.
+;;; `fmakunbound' seems to be broken on ECL 21.2.1, since it results in the symbol not being rebindable.
 #-ecl
 (define-test skip-export-slot-name-from-foreign-package (:contexts '(with-test-class-options))
   (let* ((pkg1 (find-package :nclasses/test.pkg1))
