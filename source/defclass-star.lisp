@@ -279,7 +279,9 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
                                         (eq writer 'missing))
                                    (when (and *automatic-accessors-p*
                                               (or (eq (symbol-package name) *package*)
-                                                  (not (eq *accessor-name-package* :slot-name))))
+                                                  (not (eq *accessor-name-package* :slot-name))
+                                                  (and (fboundp name)
+                                                       (typep (fboundp name) 'generic-function))))
                                      (maybe-warn-for-slot-name)
                                      (setf accessor (transform-accessor))
                                      (list :accessor accessor))
