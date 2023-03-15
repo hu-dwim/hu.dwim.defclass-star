@@ -58,6 +58,8 @@ simply define a wrapping macro (without importing =nclasses:define-start=):
 
 - Renamed =defclass*= to =define-class=.
 - Renamed =defcondition*= to =define-condition*=.
+- Default slot value when initform is omitted is =nil=.
+  To leave slot unbound, specify =:unbound= as initform value.
 - Only the core system has been kept, the ContextL, hu.dwim.def and Swank
   optional features have been removed.
 - New predicate name transformers =always-dashed-predicate-name-transformer= and

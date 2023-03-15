@@ -237,7 +237,7 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
           (setf entire-definition definition)
           (when (eq initform :unbound)
             (setf initform 'missing)))
-        (setf initform (getf definition :initform 'missing)))
+        (setf initform (getf definition :initform nil)))
     (assert (every #'keywordp (loop for el :in definition :by #'cddr
                                     collect el))
             () "Found non-keywords in ~S" definition)
