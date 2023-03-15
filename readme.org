@@ -78,6 +78,12 @@ simply define a wrapping macro (without importing =nclasses:define-start=):
 
 ** Change Log
 
+*** 0.3.0
+
+- Default to nil when slot value is unspecified.
+- Enable accessor generation in foreign package when it already exists.
+- Bug fixes.
+
 *** 0.2.1
 
 - Fix =default-accessor-name-transformer= to follow =:accessor-name-package=.
