@@ -202,6 +202,7 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
         (concatenate-symbol name '#:-of package))))
 
 (defun default-initarg-name-transformer (name definition)
+  "Converts the symbol to a keyword with the same name."
   (declare (ignorable definition))
   (concatenate-symbol name #.(symbol-package :asdf)))
 
