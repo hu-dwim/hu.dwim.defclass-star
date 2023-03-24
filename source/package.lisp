@@ -7,6 +7,7 @@
   (:use :common-lisp)
   (:export #:define-class
            #:define-condition*
+           #:define-generic
            ;; transformers
            #:default-accessor-name-transformer
            #:dwim-accessor-name-transformer

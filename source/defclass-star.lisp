@@ -522,3 +522,88 @@ See `define-class' for more details."
      `(define-condition ,name ,supers
         ,processed-slots
         ,@clean-options))))
+
+(defun generalize-arglist (arglist)
+  "Generalizes ARGLIST to be accepted by `defgeneric' (3.4.2 of CLCS/CLHS).
+Removes all the default forms or specializers and removes all keyword
+arguments if &allow-other-keys is present."
+  ;; FIXME: Is removing all the list-like args safe as generic
+  ;; function arglist?
+  (let ((arglist (mapcar (lambda (a)
+                           (if (listp a)
+                               (first a)
+                               a))
+                         arglist))
+        ;; FIXME: Is it actually necessary to remove keyword args? May
+        ;; be useful for debugging/eldoc... Eldoc/SWANK seems to
+        ;; collect keys across methods anyway.
+        (allow-other-keys (member '&allow-other-keys arglist)))
+    (if allow-other-keys
+        (let ((key-position (position '&key arglist)))
+          (setf (cdr (nthcdr key-position arglist))
+                allow-other-keys)
+          arglist)
+        arglist)))
+
+(defmacro define-generic (name (&rest arglist) &body body)
+  "Convenience macro to define generics as if they were methods.
+ARGLIST can be a method arglist, in which case it's parsed into
+generic function arglist by removing method-specific args.
+
+BODY can be a list of `defgeneric' options (processed as-is, even
+:method ones) intermixed with other Lisp forms:
+- If there's a docstring as the first form, it's processed into
+  :documentation option of `defgeneric'.
+- If there are non-option forms, they are put together into a separate
+  :method option under ARGLIST.
+- If there's a `declare' form, it's put as a `declare' option of
+  `defgeneric'. This may seem irregular if the method body also needs
+  declarations, but in such a case one's better off with a :method
+  option or `defgeneric' for the method with `declare'.
+
+Example:
+
+\(define-generic add ((a integer) (b integer) &key coerce-to-fixnum &allow-other-keys)
+  \"Adds A and B, coercing them to fixnum if the sum is too big.\"
+  (if coerce-to-fixnum
+      (coerce (+ a b) 'fixnum)
+      (+ a b))
+  (:method ((a string) (b integer))
+   (error \"Cannot use `add' on strings!\")))
+=>
+\(defgeneric add (a b &key &allow-other-keys)
+  (:method ((a integer) (b integer) &key coerce-to-fixnum &allow-other-keys)
+   (if coerce-to-fixnum
+      (coerce (+ a b) 'fixnum)
+      (+ a b)))
+  (:method ((a string) (b integer))
+   (error \"Cannot use `add' on strings!\"))
+  (:documentation \"Adds A and B, coercing them to fixnum if the sum is too big.\"))"
+  (let* ((documentation (if (stringp (first body))
+                            (first body)
+                            nil))
+         (declarations (remove-if-not (lambda (form)
+                                        (and (listp form) (eq 'declare (first form))))
+                                      body))
+         (forms (if documentation
+                    (rest body)
+                    body))
+         ;; NOTE: `set-difference' can shuffle the order of elements, thus `remove-if'.
+         (forms (remove-if (lambda (f) (member f declarations :test #'equal)) forms))
+         (options (remove-if-not (lambda (form)
+                                   (keywordp (first (uiop:ensure-list form))))
+                                 forms))
+         ;; NOTE: `set-difference' can shuffle the order of elements, thus `remove-if'.
+         (method-body (remove-if (lambda (f) (member f options :test #'equal)) forms))
+         (generalized-arglist (generalize-arglist arglist)))
+    (when (and (not (equal generalized-arglist arglist))
+               (every #'null (list method-body options)))
+      (style-warn "Specialized arglist used without method body in define-generic: ~a" arglist))
+    `(defgeneric ,name ,generalized-arglist
+       ,@declarations
+       ,@(when method-body
+           `((:method ,arglist
+               ,@method-body)))
+       ,@options
+       ,@(when documentation
+           `((:documentation ,documentation))))))
