@@ -522,3 +522,54 @@ See `define-class' for more details."
      `(define-condition ,name ,supers
         ,processed-slots
         ,@clean-options))))
+
+(defmacro make-instance* (class &rest (maybe-shortcut-arguments . rest))
+  "Convenience macro on top of `make-instance'.
+
+Conveniences:
+- First argument can be a list of symbols, which is automatically
+  converted into a keyword+symbol pairs.
+- The last argument can be an arbitrary list-producing form, which
+  will be used as the last argument to (apply #'make-instance ...).
+
+Otherwise, the behavior is equivalent to `make-instance'.
+
+Examples:
+
+Shortcut args:
+\(make-instance* 'class (a b c))
+=>
+\(make-instance 'class :a a :b b :c c)
+
+Last form for `apply':
+\(make-instance* 'class :a a :b b (when something (list a)))
+=>
+\(apply #'make-instance 'class :a a :b b (when something (list a)))
+
+Shortcut arguments, regular arguments, and form for `apply':
+\(make-instance* 'class (a b c) :x x (when something (list a)))
+=>
+\(apply #'make-instance 'class :a a :b b :c c :x x (when something (list a)))"
+  (let* ((shortcut-arguments (if (listp maybe-shortcut-arguments)
+                                 maybe-shortcut-arguments
+                                 nil))
+         (arguments (if (listp maybe-shortcut-arguments)
+                        rest
+                        (cons maybe-shortcut-arguments rest)))
+         (last-appendable-form (if (oddp (length arguments))
+                                   (car (last arguments))
+                                   nil))
+         (arguments (if last-appendable-form
+                        (butlast arguments)
+                        arguments)))
+    `(,@(if last-appendable-form
+            `(apply #'make-instance)
+            `(make-instance))
+      ,class
+      ,@(when shortcut-arguments
+          (loop for shortcut in shortcut-arguments
+                append (list (intern (symbol-name shortcut) :keyword)
+                             shortcut)))
+      ,@arguments
+      ,@(when last-appendable-form
+          (list last-appendable-form)))))
