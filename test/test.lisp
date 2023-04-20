@@ -515,3 +515,47 @@
                       (+ a b))
                     (:method ((a x) (b z) &key c)
                       c)))))
+
+(defmacro with-assert-expand (&body body)
+  `(macrolet ((assert-expand (expected macro-form)
+                `(assert-equal
+                  ,expected
+                  (macroexpand-1 ,macro-form))))
+     ,@body))
+
+(define-test make-instance-star-backward-compatible ()
+  (with-assert-expand
+    (assert-expand
+     '(make-instance 'class)
+     '(make-instance* 'class))
+    (assert-expand
+     '(make-instance 'class :foo 4 :bar 5)
+     '(make-instance* 'class :foo 4 :bar 5))))
+
+(define-test make-instance-star-shortcuts ()
+  (with-assert-expand
+    (assert-expand
+     '(apply #'make-instance 'class :a a :b b :c c nil)
+     ;; NIL required to disambiguate shortcuts from apply args.
+     '(make-instance* 'class (a b c) nil))
+    (assert-expand
+     '(make-instance 'class :a a :b b :c c :x x)
+     '(make-instance* 'class (a b c) :x x))
+    (assert-expand
+     '(apply #'make-instance 'class :a a :b b :c c (when t (list :x x)))
+     '(make-instance* 'class (a b c) (when t (list :x x))))
+    (assert-expand
+     '(make-instance 'class)
+     '(make-instance* 'class))))
+
+(define-test make-instance-star-rest ()
+  (with-assert-expand
+    (assert-expand
+     '(apply #'make-instance 'class :c c :b b (when something (list :a a)))
+     '(make-instance* 'class :c c :b b (when something (list :a a))))
+    (assert-expand
+     '(apply #'make-instance 'class :b b :c c :x x (when something (list :a a)))
+     '(make-instance* 'class (b c) :x x (when something (list :a a))))
+    (assert-expand
+     '(apply #'make-instance 'class (when something (list :a a)))
+     '(make-instance* 'class () (when something (list :a a))))))
