@@ -8,6 +8,7 @@
   (:export #:define-class
            #:define-condition*
            #:define-generic
+           #:make-instance*
            ;; transformers
            #:default-accessor-name-transformer
            #:dwim-accessor-name-transformer

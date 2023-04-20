@@ -607,3 +607,91 @@ Example:
        ,@options
        ,@(when documentation
            `((:documentation ,documentation))))))
+
+(defmacro make-instance* (class &rest arguments)
+  "Convenience macro on top of `make-instance'.
+
+Conveniences:
+
+- First argument can be a (possibly empty) list of shortcut symbols,
+  which is automatically converted into a KEYWORD+SYMBOL pairs where
+  - KEYWORD is the same as shortcut name, but interned as keyword.
+  - And SYMBOL is the same as shortcut.
+
+- The last argument can be an apply argument---arbitrary
+  list-producing form, which will be used as the last argument
+  to (apply #'make-instance ...) idiom.
+
+Note that using a singular shortcut list of apply argument is an
+ambiguous case that will be interpreted in favor of apply argument. To
+force either of interpretations, provide shortcuts and apply arguments
+explicitly:
+(make-instance* 'class (a b c)) ;; BAD
+(make-instance* 'class (a b c) nil) ;; GOOD
+(make-instance* 'class (when t nil)) ;; BAD
+(make-instance* 'class () (when t nil)) ;; GOOD
+
+Otherwise, the behavior is equivalent to `make-instance'.
+
+Examples:
+
+Shortcut args:
+\(make-instance* 'class (a b c))
+=>
+\(make-instance 'class :a a :b b :c c)
+
+Last form converted into `apply' argument:
+\(make-instance* 'class :c c :b b (when something (list :a a)))
+=>
+\(apply #'make-instance 'class :c c :b b (when something (list :a a)))
+
+Shortcut arguments, regular arguments, and form for `apply':
+\(make-instance* 'class (b c) :x x (when something (list :a a)))
+=>
+\(apply #'make-instance 'class :b b :c c :x x (when something (list :a a)))
+
+Form for `apply' (notice the empty shortcuts---these are required for
+unambiguous parsing):
+\(make-instance* 'class () (when something (list :a a)))
+=>
+\(apply #'make-instance 'class (when something (list :a a)))
+
+Regular `make-instance'-like use:
+\(make-instance* 'class :a a-value :b b-value)
+=>
+\(make-instance 'class :a a-value :b b-value)"
+  (when (and (= 1 (length arguments))
+             (listp (first arguments)))
+    (style-warn "Body of MAKE-INSTANCE* contains a single list-like form ~a.
+
+If you meant APPLY args, add empty shortcuts list:
+(make-instance* 'class () (apply-form))
+
+If you meant shortcut list, add empty APPLY args:
+(make-instance* 'class (shortcuts) nil)
+
+Interpreting as APPLY args for now, but this behavior may change in
+the future." arguments))
+  (let* ((shortcuts-p (and (listp (first arguments))
+                           (> (length arguments) 1)))
+         (shortcuts (when shortcuts-p
+                      (first arguments)))
+         (arguments (if shortcuts-p
+                        (rest arguments)
+                        arguments))
+         (last-appendable-form-p (oddp (length arguments)))
+         (last-appendable-form (when last-appendable-form-p
+                                 (first (last arguments))))
+         (arguments (if last-appendable-form-p
+                        (butlast arguments)
+                        arguments)))
+    `(,@(if last-appendable-form-p
+            `(apply #'make-instance)
+            `(make-instance))
+      ,class
+      ,@(loop for shortcut in shortcuts
+              append (list (intern (symbol-name shortcut) :keyword)
+                           shortcut))
+      ,@arguments
+      ,@(when last-appendable-form-p
+          (list last-appendable-form)))))
