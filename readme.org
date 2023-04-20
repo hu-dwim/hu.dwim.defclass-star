@@ -19,6 +19,9 @@ It's a fork of [[https://github.com/hu-dwim/hu.dwim.defclass-star][hu.dwim.defcl
 - This library offers new features that wouldn't be accepted upstream, like
   [[https://github.com/hu-dwim/hu.dwim.defclass-star/pull/3][type inference]].
 
+- This library goes beyond class definitions in providing more utility
+  macros e.g. =define-generic= and =make-instance*=.
+
 ** Examples
 
 A basic session:
@@ -53,6 +56,99 @@ simply define a wrapping macro (without importing =nclasses:define-start=):
             (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer))
           options)))
 #+end_src
+
+** Helpers beyond =define-class=
+*** =define-generic=
+
+=define-generic= is made to shorten the frequent pattern of generic with one method:
+
+#+begin_src lisp
+  (defgeneric foo (a b c)
+    (:method ((a integer) (b symbol) c)
+      (bar))
+    (:documentation "Some FOO documentation."))
+#+end_src
+
+Such a scary bloated code often makes one to use the neat =defmethod= instead:
+
+#+begin_src lisp
+  (defmethod foo ((a integer) (b symbol) c)
+    "Some FOO documentation."
+    (bar))
+#+end_src
+
+While convenient and short, standalone method definition
+auto-generates a generic function that's neither documented nor
+inspectable. =define-generic= solves this problem by making =defgeneric=
+form shorter and more =defmethod=-like, without any loss of
+semantics. The previous form looks like this with =define-generic=:
+
+#+begin_src lisp
+  (define-generic foo ((a integer) (b symbol) c)
+    "Some FOO documentation."
+    (bar))
+#+end_src
+
+This form expand to exactly the same generic definition as the one
+above, while being as concise as the defmethod version.
+
+The body or =define-generic= is automatically wrapped into a =:method=
+option, so there could be several body forms. If any of these body
+forms is a =defgeneric= option, it's safely put as defgeneric option
+outside the implied method:
+#+begin_src lisp
+  (define-generic foo ((a integer) (b symbol) c)
+    "Some FOO documentation." ; Docstring should always go first.
+    (:method-combination progn)
+    (bar)
+    (:generic-function-class foo-class))
+  ;; =>
+  ;; (defgeneric foo (a b c)
+  ;;   (:method ((a integer) (b symbol) c)
+  ;;     (bar))
+  ;;   (:method-combination progn)
+  ;;   (:generic-function-class foo-class)
+  ;;   (:documentation "Some FOO documentation."))
+#+end_src
+
+See the =define-generic= documentation for more examples and details.
+
+*** make-instance*
+There are several idioms that heavily object-oriented CL code converges to:
+- =(make-instance 'class :width width :height height)= :: repetitive
+  arguments.
+- =(apply #'make-instance 'class :key val :key2 val2 (when something (list :key3 val3)))= :: appending
+  args to the =make-instance= form via =apply=.
+
+=make-instance*= abstracts these two patterns with shortcut arguments and apply forms respectively:
+- Shortcut arguments are a list of symbols that will be expanded into
+  a list of eponymous keywords and args:
+#+begin_src lisp
+  (make-instance* 'class (height width) :depth 3)
+  ;; =>
+  ;; (make-instance 'class :height height :width width :depth 3)
+#+end_src
+- Apply form allows passing the last =apply= argument without explicitly
+  calling =apply=:
+#+begin_src lisp
+  (make-instance* 'class :width 3 :height 5 (when three-dimentions (list :depth 3)))
+  ;; =>
+  ;; (apply #'make-instance 'class :width 3 :height 5 (when three-dimentions (list :depth 3)))
+#+end_src
+
+Both of these patterns can be used together, dramatically shortening
+the code:
+#+begin_src lisp
+  (make-instance* 'class (width height) (when three-dimentions (list :depth 3)))
+  ;; =>
+  ;; (apply #'make-instance 'class :width width :height height (when three-dimentions (list :depth 3)))
+#+end_src
+
+Note that using either of these conveniences as the sole
+=make-instance*= argument is an ambiguous case that should be avoided by
+providing either shortcuts or apply form as an explicit NIL/().
+
+See the =make-instance*= documentation for more examples and details.
 
 ** Changes from =defclass-star=
 
