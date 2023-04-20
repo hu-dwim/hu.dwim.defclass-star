@@ -27,10 +27,10 @@
            #:make-name-transformer
            #:*allowed-slot-definition-properties*)
   (:documentation "This library offers four helper macros:
-- `nclasses:define-class'
-- `nclasses:define-condition*'.
-- `nclasses:define-generic'.
-- `nclasses:make-instance*'.
+- `nclasses:define-class' (aliases `nclasses:define-class*' and `nclasses:defclass*')
+- `nclasses:define-condition*' (alias `nclasses:defcondition*').
+- `nclasses:define-generic' (aliases `nclasses:define-generic*' and `nclasses:defgeneric*').
+- `nclasses:make-instance*' (alias `nclasses:make*').
 
 Compared to the standard macros, they accept extra options and slot definition
 is smarter.
