@@ -411,3 +411,107 @@
                 (getf (mopu:slot-properties (find-class 'child2) 'name) :type))
   (assert-equal 'string
                 (getf (mopu:slot-properties (find-class 'child2) 'bio) :type)))
+
+(define-test define-generic-arguments ()
+  ;; Simple specialized arglist.
+  (assert-equal
+   '(defgeneric generic (a b)
+     (:method ((a a) (b b))
+       (+ a b)))
+   (macroexpand-1 '(define-generic generic ((a a) (b b))
+                    (+ a b))))
+  ;; Keyword argument preservation.
+  (assert-equal
+   '(defgeneric generic (a b &key c)
+     (:method ((a a) (b b) &key (c nil))
+       (+ a b)))
+   (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil))
+                    (+ a b))))
+  ;; Keyword arguments removal with &allow-other-keys.
+  (assert-equal
+   '(defgeneric generic (a b &key &allow-other-keys)
+     (:method ((a a) (b b) &key (c nil) &allow-other-keys)
+       (+ a b)))
+   (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil) &allow-other-keys)
+                    (+ a b))))
+  ;; Unspecialized arguments.
+  (assert-equal
+   ;; This is safe, as methods can have unspecialized arguments.
+   '(defgeneric generic (a b &key &allow-other-keys)
+     (:method (a b &key c &allow-other-keys)
+       (+ a b)))
+   (macroexpand-1 '(define-generic generic (a b &key c &allow-other-keys)
+                    (+ a b))))
+  ;; Warns on specialized args without body.
+  (assert-warning 'nclasses::hu.dwim.defclass-star-style-warning
+                  (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil))
+                                   "Documentation"))))
+
+(define-test define-generic-body ()
+  ;; Two methods---one implicit, one explicit.
+  (assert-equal
+   '(defgeneric generic (a b &key c)
+     (:method ((a a) (b b) &key (c nil))
+       (+ a b))
+     (:method ((a x) (b z) &key c)
+       c))
+   (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil))
+                    (+ a b)
+                    (:method ((a x) (b z) &key c)
+                      c))))
+  ;; Single documentation body.
+  (assert-equal
+   '(defgeneric generic (a b &key c)
+     (:documentation "Documentation."))
+   (macroexpand-1 '(define-generic generic (a b &key c)
+                    "Documentation.")))
+  ;; Documentation and implicit method.
+  (assert-equal
+   '(defgeneric generic (a b &key c)
+     (:method ((a a) (b b) &key (c nil))
+       (+ a b))
+     (:documentation "Documentation."))
+   (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil))
+                    "Documentation."
+                    (+ a b))))
+  ;; Messed up documentation as method body.
+  (assert-equal
+   '(defgeneric generic (a b &key c)
+     (:method ((a a) (b b) &key (c nil))
+       (+ a b)
+       "Documentation."))
+   (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil))
+                    (+ a b)
+                    "Documentation."))))
+
+(define-test define-generic-regular-options ()
+  ;; Combination.
+  (assert-equal
+   '(defgeneric generic (a b &key c)
+     (:method-combination progn))
+   (macroexpand-1 '(define-generic generic (a b &key c)
+                    (:method-combination progn))))
+  ;; Declaration.
+  (assert-equal
+   '(defgeneric generic (a b &key c)
+     (declare (optimize (speed 3))))
+   (macroexpand-1 '(define-generic generic (a b &key c)
+                    (declare (optimize (speed 3))))))
+  ;; Explicit documentation.
+  (assert-equal
+   '(defgeneric generic (a b &key c)
+     (:documentation "Documentation."))
+   (macroexpand-1 '(define-generic generic (a b &key c)
+                    (:documentation "Documentation."))))
+  ;; Explicit methods.
+  (assert-equal
+   '(defgeneric generic (a b &key c)
+     (:method ((a a) (b b) &key (c nil))
+                      (+ a b))
+     (:method ((a x) (b z) &key c)
+       c))
+   (macroexpand-1 '(define-generic generic (a b &key c)
+                    (:method ((a a) (b b) &key (c nil))
+                      (+ a b))
+                    (:method ((a x) (b z) &key c)
+                      c)))))
