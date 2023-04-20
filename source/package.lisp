@@ -21,14 +21,16 @@
            #:default-type-inference
            #:make-name-transformer
            #:*allowed-slot-definition-properties*)
-  (:documentation "This library offers two helper macros:
+  (:documentation "This library offers four helper macros:
 - `nclasses:define-class'
 - `nclasses:define-condition*'.
+- `nclasses:define-generic'.
+- `nclasses:make-instance*'.
 
 Compared to the standard macros, they accept extra options and slot definition
 is smarter.
 
-Example:
+Example of `nclasses:define-class':
 
 (define-class foo ()
   ((slot1 :initarg nil)
@@ -47,4 +49,4 @@ explicitly set to NIL.
 Notice that the second value of the slot definition, if not an option, is then
 the initform.
 
-See `nclasses:define-class' for more details."))
+See `nclasses:define-class' and other macros' documentation for more details."))
