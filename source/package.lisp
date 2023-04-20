@@ -6,9 +6,14 @@
 (defpackage :nclasses
   (:use :common-lisp)
   (:export #:define-class
+           #:defclass* ; alias
            #:define-condition*
+           #:defcondition* ; alias
            #:define-generic
+           #:define-generic* ; alias
+           #:defgeneric* ; alias
            #:make-instance*
+           #:make* ; alias
            ;; transformers
            #:default-accessor-name-transformer
            #:dwim-accessor-name-transformer
