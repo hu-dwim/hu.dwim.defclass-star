@@ -513,6 +513,11 @@ New class options (defaults are NIL unless specified):
         ,processed-slots
         ,@clean-options))))
 
+(setf (macro-function 'defclass*) (macro-function 'define-class)
+      (documentation 'defclass* 'function) (documentation 'define-class 'function)
+      (macro-function 'define-class*) (macro-function 'define-class)
+      (documentation 'define-class* 'function) (documentation 'define-class 'function))
+
 (defmacro define-condition* (name supers slots &rest options)
   "To `define-condition' what `define-class' is to `defclass'.
 See `define-class' for more details."
@@ -522,6 +527,9 @@ See `define-class' for more details."
      `(define-condition ,name ,supers
         ,processed-slots
         ,@clean-options))))
+
+(setf (macro-function 'defcondition*) (macro-function 'define-condition*)
+      (documentation 'defcondition* 'function) (documentation 'define-condition* 'function))
 
 (defun generalize-arglist (arglist)
   "Generalizes ARGLIST to be accepted by `defgeneric' (3.4.2 of CLCS/CLHS).
@@ -607,6 +615,11 @@ Example:
        ,@options
        ,@(when documentation
            `((:documentation ,documentation))))))
+
+(setf (macro-function 'defgeneric*) (macro-function 'define-generic)
+      (documentation 'defgeneric* 'function) (documentation 'define-generic 'function)
+      (macro-function 'define-generic*) (macro-function 'define-generic)
+      (documentation 'define-generic* 'function) (documentation 'define-generic 'function))
 
 (defmacro make-instance* (class &rest arguments)
   "Convenience macro on top of `make-instance'.
@@ -695,3 +708,6 @@ the future." arguments))
       ,@arguments
       ,@(when last-appendable-form-p
           (list last-appendable-form)))))
+
+(setf (macro-function 'make*) (macro-function 'make-instance*)
+      (documentation 'make* 'function) (documentation 'make-instance* 'function))

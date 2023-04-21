@@ -6,9 +6,14 @@
 (defpackage :nclasses
   (:use :common-lisp)
   (:export #:define-class
+           #:defclass* ; alias
            #:define-condition*
+           #:defcondition* ; alias
            #:define-generic
+           #:define-generic* ; alias
+           #:defgeneric* ; alias
            #:make-instance*
+           #:make* ; alias
            ;; transformers
            #:default-accessor-name-transformer
            #:dwim-accessor-name-transformer
@@ -22,10 +27,10 @@
            #:make-name-transformer
            #:*allowed-slot-definition-properties*)
   (:documentation "This library offers four helper macros:
-- `nclasses:define-class'
-- `nclasses:define-condition*'.
-- `nclasses:define-generic'.
-- `nclasses:make-instance*'.
+- `nclasses:define-class' (aliases `nclasses:define-class*' and `nclasses:defclass*')
+- `nclasses:define-condition*' (alias `nclasses:defcondition*').
+- `nclasses:define-generic' (aliases `nclasses:define-generic*' and `nclasses:defgeneric*').
+- `nclasses:make-instance*' (alias `nclasses:make*').
 
 Compared to the standard macros, they accept extra options and slot definition
 is smarter.
