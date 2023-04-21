@@ -114,6 +114,7 @@ Non-basic scalar types are derived to their own type (with `type-of')."
 (defvar *export-accessor-names-p* nil)
 (defvar *export-slot-names-p* nil)
 (defvar *export-predicate-name-p* nil)
+(defvar *export-generic-name-p* nil)
 
 (defvar *initarg-name-transformer* 'default-initarg-name-transformer)
 (defvar *automatic-initargs-p* t)
@@ -574,6 +575,8 @@ BODY can be a list of `defgeneric' options (processed as-is, even
   `defgeneric'. This may seem irregular if the method body also needs
   declarations, but in such a case one's better off with a :method
   option or `defgeneric' for the method with `declare'.
+- If there's an `:export-generic-name-p' boolean option, export (T) or
+  don't export (NIL) the generic symbol.
 
 Example:
 
@@ -609,6 +612,11 @@ Example:
                                  forms))
          ;; NOTE: `set-difference' can shuffle the order of elements, thus `remove-if'.
          (method-body (remove-if (lambda (f) (member f options :test #'equal)) forms))
+         (export-generic-name-p (find :export-generic-name-p options :key #'first))
+         (options (remove export-generic-name-p options :test #'equal))
+         (export-p (if export-generic-name-p
+                       (second export-generic-name-p)
+                       *export-generic-name-p*))
          (generalized-arglist (generalize-arglist arglist)))
     (when (and (not (equal generalized-arglist arglist))
                (every #'null (list method-body options)))
@@ -622,7 +630,11 @@ Example:
            ,@options
            ,@(when documentation
                `((:documentation ,documentation))))
-       ;; TODO: :export?
+       ;; FIXME: Maybe only export if package of generic function name
+       ;; matches *PACKAGE*?
+       ,@(when export-p
+           `((eval-when (:compile-toplevel :load-toplevel :execute)
+               (export ',name ,(package-name *package*)))))
        ,@(let ((documentation (or documentation
                                   (second (first (member :documentation options :key #'first))))))
            (when documentation

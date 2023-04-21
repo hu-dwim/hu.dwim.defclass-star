@@ -534,7 +534,21 @@
      (:method ((a a) (b b) &key (c nil))
        (+ a b))
      (:method ((a x) (b z) &key c)
-       c))))
+       c)))
+  (assert-equal
+   `(prog1
+        (defgeneric generic
+            (a b &key c)
+          (:documentation "If :export-generic-name-p is true, export the name."))
+      (eval-when (:compile-toplevel :load-toplevel :execute)
+        (export 'generic ,(package-name *package*)))
+      (setf (documentation 'generic 'function)
+            "If :export-generic-name-p is true, export the name.")
+      (setf (documentation (fdefinition 'generic) 'function)
+            "If :export-generic-name-p is true, export the name."))
+   (macroexpand-1 '(define-generic generic (a b &key c)
+                    "If :export-generic-name-p is true, export the name."
+                    (:export-generic-name-p t)))))
 
 
 (define-test make-instance-star-backward-compatible ()
