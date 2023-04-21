@@ -161,11 +161,11 @@
                     (1 2)
                     (3 4))
                   (define-class some-class (some super classes)
-                      ((slot1 42 :documentation "zork"))
-                      (1 2)
-                      (:automatic-accessors-p nil)
-                      (:automatic-initargs-p nil)
-                      (3 4)))
+                    ((slot1 42 :documentation "zork"))
+                    (1 2)
+                    (:automatic-accessors-p nil)
+                    (:automatic-initargs-p nil)
+                    (3 4)))
   (assert-equal `(progn
                   (defclass some-class (some super classes)
                     ((slot1 :initform 42 :accessor slot1-of :initarg :slot1 :documentation "zork")
@@ -414,34 +414,38 @@
 
 (define-test define-generic-arguments ()
   ;; Simple specialized arglist.
-  (assert-equal
-   '(defgeneric generic (a b)
-     (:method ((a a) (b b))
-       (+ a b)))
-   (macroexpand-1 '(define-generic generic ((a a) (b b))
-                    (+ a b))))
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b)
+         (:method ((a a) (b b))
+           (+ a b))))
+   (define-generic generic ((a a) (b b))
+     (+ a b)))
   ;; Keyword argument preservation.
-  (assert-equal
-   '(defgeneric generic (a b &key c)
-     (:method ((a a) (b b) &key (c nil))
-       (+ a b)))
-   (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil))
-                    (+ a b))))
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (:method ((a a) (b b) &key (c nil))
+           (+ a b))))
+   (define-generic generic ((a a) (b b) &key (c nil))
+     (+ a b)))
   ;; Keyword arguments removal with &allow-other-keys.
-  (assert-equal
-   '(defgeneric generic (a b &key &allow-other-keys)
-     (:method ((a a) (b b) &key (c nil) &allow-other-keys)
-       (+ a b)))
-   (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil) &allow-other-keys)
-                    (+ a b))))
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key &allow-other-keys)
+         (:method ((a a) (b b) &key (c nil) &allow-other-keys)
+           (+ a b))))
+   (define-generic generic ((a a) (b b) &key (c nil) &allow-other-keys)
+     (+ a b)))
   ;; Unspecialized arguments.
-  (assert-equal
-   ;; This is safe, as methods can have unspecialized arguments.
-   '(defgeneric generic (a b &key &allow-other-keys)
-     (:method (a b &key c &allow-other-keys)
-       (+ a b)))
-   (macroexpand-1 '(define-generic generic (a b &key c &allow-other-keys)
-                    (+ a b))))
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key &allow-other-keys)
+         ;; This is safe, as methods can have unspecialized arguments.
+         (:method (a b &key c &allow-other-keys)
+           (+ a b))))
+   (define-generic generic (a b &key c &allow-other-keys)
+     (+ a b)))
   ;; Warns on specialized args without body.
   (assert-warning 'nclasses::hu.dwim.defclass-star-style-warning
                   (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil))
@@ -449,113 +453,120 @@
 
 (define-test define-generic-body ()
   ;; Two methods---one implicit, one explicit.
-  (assert-equal
-   '(defgeneric generic (a b &key c)
-     (:method ((a a) (b b) &key (c nil))
-       (+ a b))
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (:method ((a a) (b b) &key (c nil))
+           (+ a b))
+         (:method ((a x) (b z) &key c)
+           c)))
+   (define-generic generic ((a a) (b b) &key (c nil))
+     (+ a b)
      (:method ((a x) (b z) &key c)
-       c))
-   (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil))
-                    (+ a b)
-                    (:method ((a x) (b z) &key c)
-                      c))))
+       c)))
   ;; Single documentation body.
-  (assert-equal
-   '(defgeneric generic (a b &key c)
-     (:documentation "Documentation."))
-   (macroexpand-1 '(define-generic generic (a b &key c)
-                    "Documentation.")))
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (:documentation "Body consisting of documentation."))
+     (setf (documentation 'generic 'function) "Body consisting of documentation.")
+     (setf (documentation (fdefinition 'generic) 'function) "Body consisting of documentation."))
+   (define-generic generic (a b &key c)
+     "Body consisting of documentation."))
   ;; Documentation and implicit method.
-  (assert-equal
-   '(defgeneric generic (a b &key c)
-     (:method ((a a) (b b) &key (c nil))
-       (+ a b))
-     (:documentation "Documentation."))
-   (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil))
-                    "Documentation."
-                    (+ a b))))
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (:method ((a a) (b b) &key (c nil))
+           (+ a b))
+         (:documentation "This expands to documentation."))
+     (setf (documentation 'generic 'function) "This expands to documentation.")
+     (setf (documentation (fdefinition 'generic) 'function) "This expands to documentation."))
+   (define-generic generic ((a a) (b b) &key (c nil))
+     "This expands to documentation."
+     (+ a b)))
   ;; Messed up documentation as method body.
-  (assert-equal
-   '(defgeneric generic (a b &key c)
-     (:method ((a a) (b b) &key (c nil))
-       (+ a b)
-       "Documentation."))
-   (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil))
-                    (+ a b)
-                    "Documentation."))))
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (:method ((a a) (b b) &key (c nil))
+           (+ a b)
+           "This is not recognized as documentation.")))
+   (define-generic generic ((a a) (b b) &key (c nil))
+     (+ a b)
+     "This is not recognized as documentation.")))
 
 (define-test define-generic-regular-options ()
   ;; Combination.
-  (assert-equal
-   '(defgeneric generic (a b &key c)
-     (:method-combination progn))
-   (macroexpand-1 '(define-generic generic (a b &key c)
-                    (:method-combination progn))))
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (:method-combination progn)))
+   (define-generic generic (a b &key c)
+     (:method-combination progn)))
   ;; Declaration.
-  (assert-equal
-   '(defgeneric generic (a b &key c)
-     (declare (optimize (speed 3))))
-   (macroexpand-1 '(define-generic generic (a b &key c)
-                    (declare (optimize (speed 3))))))
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (declare (optimize (speed 3)))))
+   (define-generic generic (a b &key c)
+     (declare (optimize (speed 3)))))
   ;; Explicit documentation.
-  (assert-equal
-   '(defgeneric generic (a b &key c)
-     (:documentation "Documentation."))
-   (macroexpand-1 '(define-generic generic (a b &key c)
-                    (:documentation "Documentation."))))
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (:documentation "Documentation is set both as :documentation option and `documentation'."))
+     (setf (documentation 'generic 'function)
+           "Documentation is set both as :documentation option and `documentation'.")
+     (setf (documentation (fdefinition 'generic) 'function)
+           "Documentation is set both as :documentation option and `documentation'."))
+   (define-generic generic (a b &key c)
+     (:documentation "Documentation is set both as :documentation option and `documentation'.")))
   ;; Explicit methods.
-  (assert-equal
-   '(defgeneric generic (a b &key c)
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (:method ((a a) (b b) &key (c nil))
+           (+ a b))
+         (:method ((a x) (b z) &key c)
+           c)))
+   (define-generic generic (a b &key c)
      (:method ((a a) (b b) &key (c nil))
-                      (+ a b))
+       (+ a b))
      (:method ((a x) (b z) &key c)
-       c))
-   (macroexpand-1 '(define-generic generic (a b &key c)
-                    (:method ((a a) (b b) &key (c nil))
-                      (+ a b))
-                    (:method ((a x) (b z) &key c)
-                      c)))))
+       c))))
 
-(defmacro with-assert-expand (&body body)
-  `(macrolet ((assert-expand (expected macro-form)
-                `(assert-equal
-                  ,expected
-                  (macroexpand-1 ,macro-form))))
-     ,@body))
 
 (define-test make-instance-star-backward-compatible ()
-  (with-assert-expand
-    (assert-expand
-     '(make-instance 'class)
-     '(make-instance* 'class))
-    (assert-expand
-     '(make-instance 'class :foo 4 :bar 5)
-     '(make-instance* 'class :foo 4 :bar 5))))
+  (assert-expands
+   (make-instance 'class)
+   (make-instance* 'class))
+  (assert-expands
+   (make-instance 'class :foo 4 :bar 5)
+   (make-instance* 'class :foo 4 :bar 5)))
 
 (define-test make-instance-star-shortcuts ()
-  (with-assert-expand
-    (assert-expand
-     '(apply #'make-instance 'class :a a :b b :c c nil)
-     ;; NIL required to disambiguate shortcuts from apply args.
-     '(make-instance* 'class (a b c) nil))
-    (assert-expand
-     '(make-instance 'class :a a :b b :c c :x x)
-     '(make-instance* 'class (a b c) :x x))
-    (assert-expand
-     '(apply #'make-instance 'class :a a :b b :c c (when t (list :x x)))
-     '(make-instance* 'class (a b c) (when t (list :x x))))
-    (assert-expand
-     '(make-instance 'class)
-     '(make-instance* 'class))))
+  (assert-expands
+   (apply #'make-instance 'class :a a :b b :c c nil)
+   ;; NIL required to disambiguate shortcuts from apply args.
+   (make-instance* 'class (a b c) nil))
+  (assert-expands
+   (make-instance 'class :a a :b b :c c :x x)
+   (make-instance* 'class (a b c) :x x))
+  (assert-expands
+   (apply #'make-instance 'class :a a :b b :c c (when t (list :x x)))
+   (make-instance* 'class (a b c) (when t (list :x x))))
+  (assert-expands
+   (make-instance 'class)
+   (make-instance* 'class)))
 
 (define-test make-instance-star-rest ()
-  (with-assert-expand
-    (assert-expand
-     '(apply #'make-instance 'class :c c :b b (when something (list :a a)))
-     '(make-instance* 'class :c c :b b (when something (list :a a))))
-    (assert-expand
-     '(apply #'make-instance 'class :b b :c c :x x (when something (list :a a)))
-     '(make-instance* 'class (b c) :x x (when something (list :a a))))
-    (assert-expand
-     '(apply #'make-instance 'class (when something (list :a a)))
-     '(make-instance* 'class () (when something (list :a a))))))
+  (assert-expands
+   (apply #'make-instance 'class :c c :b b (when something (list :a a)))
+   (make-instance* 'class :c c :b b (when something (list :a a))))
+  (assert-expands
+   (apply #'make-instance 'class :b b :c c :x x (when something (list :a a)))
+   (make-instance* 'class (b c) :x x (when something (list :a a))))
+  (assert-expands
+   (apply #'make-instance 'class (when something (list :a a)))
+   (make-instance* 'class () (when something (list :a a)))))

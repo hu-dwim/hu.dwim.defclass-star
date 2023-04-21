@@ -426,6 +426,12 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
                          `((eval-when (:compile-toplevel :load-toplevel :execute)
                              (export ',syms
                                      ,(package-name *package*)))))))
+                 ,@(let ((documentation (second (first (member :documentation clean-options :key #'first)))))
+                     (when documentation
+                       `((setf (documentation ',name 'type) ,documentation)
+                         ;; Conditions might be non-class types.
+                         (ignore-errors
+                          (setf (documentation (find-class ',name) 'type) ,documentation)))))
                  (find-class ',name nil))
               result))))))
 
@@ -607,14 +613,21 @@ Example:
     (when (and (not (equal generalized-arglist arglist))
                (every #'null (list method-body options)))
       (style-warn "Specialized arglist used without method body in define-generic: ~a" arglist))
-    `(defgeneric ,name ,generalized-arglist
-       ,@declarations
-       ,@(when method-body
-           `((:method ,arglist
-               ,@method-body)))
-       ,@options
-       ,@(when documentation
-           `((:documentation ,documentation))))))
+    `(prog1
+         (defgeneric ,name ,generalized-arglist
+           ,@declarations
+           ,@(when method-body
+               `((:method ,arglist
+                   ,@method-body)))
+           ,@options
+           ,@(when documentation
+               `((:documentation ,documentation))))
+       ;; TODO: :export?
+       ,@(let ((documentation (or documentation
+                                  (second (first (member :documentation options :key #'first))))))
+           (when documentation
+             `((setf (documentation ',name 'function) ,documentation)
+               (setf (documentation (fdefinition ',name) 'function) ,documentation)))))))
 
 (setf (macro-function 'defgeneric*) (macro-function 'define-generic)
       (documentation 'defgeneric* 'function) (documentation 'define-generic 'function)
