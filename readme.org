@@ -152,8 +152,11 @@ See the =make-instance*= documentation for more examples and details.
 
 ** Changes from =defclass-star=
 
-- Renamed =defclass*= to =define-class=.
-- Renamed =defcondition*= to =define-condition*=.
+- Renamed =defclass*= to =define-class= (although =defclass*= is still available as alias, alongside =define-class*=).
+- Renamed =defcondition*= to =define-condition*= (=defcondition*= is still available as alias of =define-condition*=).
+- Added convenience macros beyond class definition:
+  - =define-generic= for concise generic function definition (with =defgeneric*= and =define-generic*= aliases).
+  - =make-instance*= (with =make*= alias) to abstract eponymous keywords and arguments and inline the =apply #'make-instance= idiom.
 - Default slot value when initform is omitted is =nil=.
   To leave slot unbound, specify =:unbound= as initform value.
 - Only the core system has been kept, the ContextL, hu.dwim.def and Swank
