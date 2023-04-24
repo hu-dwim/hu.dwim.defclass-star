@@ -246,6 +246,7 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
     (destructuring-bind (&key (accessor 'missing) (initarg 'missing)
                               (reader 'missing) (writer 'missing)
                               (export 'missing) (type 'missing)
+                              documentation
                               &allow-other-keys)
         definition
       (remf-keywords definition :accessor :reader :writer :initform :initarg :export :type)
@@ -341,7 +342,31 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
                     (when (and accessor (not (eq accessor 'missing)))
                       (push accessor *symbols-to-export*)))
                   (when *export-slot-names-p*
-                    (push name *symbols-to-export*))))))))))
+                    (push name *symbols-to-export*))))
+            (let* ((accessor-p (or (provided-p accessor)
+                                   (and (provided-p writer)
+                                        (provided-p reader))))
+                   (documented-symbol (cond
+                                        (accessor-p accessor)
+                                        ((provided-p writer)
+                                         (second writer))
+                                        ((provided-p reader)
+                                         reader))))
+              (when (and documented-symbol
+                         (not (documentation documented-symbol 'function)))
+                (setf (documentation documented-symbol 'function)
+                      (format nil "Auto-generated ~a function for slot ~a.~@[
+~a~]"
+                              (cond
+                                (accessor-p "accessor")
+                                ((and (provided-p writer)
+                                      (not (provided-p reader)))
+                                 "writer")
+                                ((and (provided-p reader)
+                                      (not (provided-p writer)))
+                                 "reader")
+                                (t "accessor"))
+                              name documentation))))))))))
 
 (defun extract-options-into-bindings (options)
   (let ((binding-names)
