@@ -177,6 +177,12 @@ See the =make-instance*= documentation for more examples and details.
 
 ** Change Log
 
+*** 0.4.0
+
+- Add =make-instance*= and =define-generic= convenience macros.
+- Add alias macros, like =defclass*=, =defcondition*=, =defgeneric*=, and =make*=.
+- Ensure documentation is always set for classes, generics, and conditions.
+
 *** 0.3.0
 
 - Default to nil when slot value is unspecified.
