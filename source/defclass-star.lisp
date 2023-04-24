@@ -402,6 +402,8 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
                      (let ((pred-name (funcall *predicate-name-transformer* name)))
                        `((unless (fboundp ',pred-name)
                            (defun ,pred-name (object)
+                             ,(format nil "Auto-generated predicate for whether OBJECT is an instance of ~a."
+                                      name)
                              #+sbcl
                              (declare (sb-ext:muffle-conditions style-warning))
                              (typep object ',name)))
