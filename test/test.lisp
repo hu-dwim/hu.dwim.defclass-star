@@ -431,7 +431,6 @@
   (assert-string= "Documented class."
                   (documentation 'documented-class 'type))
   (assert-string= "Auto-generated accessor function for slot DOCUMENTED-SLOT.
-Slot documentation:
 A slot with explicit documentation."
                   (documentation 'documented-slot 'function))
   (assert-string= "Auto-generated accessor function for slot UNDOCUMENTED-SLOT."
