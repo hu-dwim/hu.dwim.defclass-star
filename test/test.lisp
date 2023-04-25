@@ -167,13 +167,33 @@
                     (:automatic-initargs-p nil)
                     (3 4)))
   (assert-equal `(progn
-                  (defclass some-class (some super classes)
-                    ((slot1 :initform 42 :accessor slot1-of :initarg :slot1 :documentation "zork")
-                     (slot2 :accessor slot2-custom :initarg :slot2)
-                     (slot3 :initarg :slot3)))
-                  (eval-when (:compile-toplevel :load-toplevel :execute)
-                    (export '(some-class slot2 slot2-custom slot1 slot1-of) ,(package-name *package*)))
-                  (find-class 'some-class nil))
+                   (defclass some-class (some super classes)
+                     ((slot1 :initform 42 :accessor slot1-of :initarg :slot1
+                             :documentation "zork")
+                      (slot2 :accessor slot2-custom :initarg :slot2)
+                      (slot3 :initarg :slot3)))
+                   (eval-when (:compile-toplevel :load-toplevel :execute)
+                     (export '(some-class slot2 slot2-custom slot1 slot1-of) ,(package-name *package*)))
+                   (setf (documentation 'slot2-custom 'function)
+                         "Auto-generated accessor function for slot SLOT2.")
+                   (ignore-errors
+                    (setf (documentation (fdefinition 'slot2-custom) 'function)
+                          "Auto-generated accessor function for slot SLOT2."))
+                   (ignore-errors
+                    (setf (documentation (fdefinition '(setf slot2-custom)) 'function)
+                          "Auto-generated accessor function for slot SLOT2."))
+                   (setf (documentation 'slot1-of 'function)
+                         "Auto-generated accessor function for slot SLOT1.
+zork")
+                   (ignore-errors
+                    (setf (documentation (fdefinition 'slot1-of) 'function)
+                          "Auto-generated accessor function for slot SLOT1.
+zork"))
+                   (ignore-errors
+                    (setf (documentation (fdefinition '(setf slot1-of)) 'function)
+                          "Auto-generated accessor function for slot SLOT1.
+zork"))
+                   (find-class 'some-class nil))
                 (macroexpand-1 '(define-class some-class (some super classes)
                                     ((slot1 42 :documentation "zork")
                                      (slot2 :unbound :accessor slot2-custom)
@@ -183,12 +203,48 @@
                                     (:export-slot-names-p t))))
   (assert-equal `(progn
                    (defclass some-class (some super classes)
-                     ((slot1 :initform 42 :accessor slot1-of :initarg :slot1 :documentation "zork")
+                     ((slot1 :initform 42 :accessor slot1-of :initarg :slot1
+                             :documentation "zork")
                       (slot2 :accessor slot2-custom :initarg :slot2)
                       (slot3 :initform 42 :accessor slot3-of :initarg :slot3)
                       (slot4 :initform 42 :accessor slot4-of :initarg :slot4)))
                    (eval-when (:compile-toplevel :load-toplevel :execute)
                      (export '(some-class slot3-of slot2 slot2-custom slot1) ,(package-name *package*)))
+                   (setf (documentation 'slot4-of 'function)
+                         "Auto-generated accessor function for slot SLOT4.")
+                   (ignore-errors
+                    (setf (documentation (fdefinition 'slot4-of) 'function)
+                          "Auto-generated accessor function for slot SLOT4."))
+                   (ignore-errors
+                    (setf (documentation (fdefinition '(setf slot4-of)) 'function)
+                          "Auto-generated accessor function for slot SLOT4."))
+                   (setf (documentation 'slot3-of 'function)
+                         "Auto-generated accessor function for slot SLOT3.")
+                   (ignore-errors
+                    (setf (documentation (fdefinition 'slot3-of) 'function)
+                          "Auto-generated accessor function for slot SLOT3."))
+                   (ignore-errors
+                    (setf (documentation (fdefinition '(setf slot3-of)) 'function)
+                          "Auto-generated accessor function for slot SLOT3."))
+                   (setf (documentation 'slot2-custom 'function)
+                         "Auto-generated accessor function for slot SLOT2.")
+                   (ignore-errors
+                    (setf (documentation (fdefinition 'slot2-custom) 'function)
+                          "Auto-generated accessor function for slot SLOT2."))
+                   (ignore-errors
+                    (setf (documentation (fdefinition '(setf slot2-custom)) 'function)
+                          "Auto-generated accessor function for slot SLOT2."))
+                   (setf (documentation 'slot1-of 'function)
+                         "Auto-generated accessor function for slot SLOT1.
+zork")
+                   (ignore-errors
+                    (setf (documentation (fdefinition 'slot1-of) 'function)
+                          "Auto-generated accessor function for slot SLOT1.
+zork"))
+                   (ignore-errors
+                    (setf (documentation (fdefinition '(setf slot1-of)) 'function)
+                          "Auto-generated accessor function for slot SLOT1.
+zork"))
                    (find-class 'some-class nil))
                 (macroexpand-1 '(define-class some-class (some super classes)
                                  ((slot1 42 :documentation "zork" :export :slot)
@@ -198,6 +254,16 @@
                                  (:export-accessor-names-p t)
                                  (:export-class-name-p t)
                                  (:export-slot-names-p t)))))
+
+(with-test-class-options
+  (lambda ()
+    (macroexpand-1 '(define-class some-class (some super classes)
+                     ((slot1 42 :documentation "zork")
+                      (slot2 :unbound :accessor slot2-custom)
+                      (slot3 :unbound :accessor nil :export :accessor))
+                     (:export-accessor-names-p t)
+                     (:export-class-name-p t)
+                     (:export-slot-names-p t)))))
 
 (define-test warnings-and-errors (:contexts '(with-test-class-options))
   (let ((*allowed-slot-definition-properties* *allowed-slot-definition-properties*))
@@ -412,7 +478,6 @@
   (assert-equal 'string
                 (getf (mopu:slot-properties (find-class 'child2) 'bio) :type)))
 
-#-ccl
 (define-test accessor-and-class-documentation ()
   (define-class documented-class ()
     ((documented-slot
@@ -436,10 +501,10 @@ A slot with explicit documentation."
                   (documentation 'documented-slot 'function))
   (assert-string= "Auto-generated accessor function for slot UNDOCUMENTED-SLOT."
                   (documentation 'undocumented-slot 'function))
-  (assert-string= "Auto-generated reader function for slot NO-WRITER-SLOT."
+  (assert-string= "Auto-generated accessor function for slot NO-WRITER-SLOT."
                   (documentation 'no-writer-slot 'function))
-  (assert-string= "Auto-generated writer function for slot NO-READER-SLOT."
-                  (documentation 'no-reader-slot 'function)))
+  (assert-string= "Auto-generated accessor function for slot NO-READER-SLOT."
+                  (documentation (fdefinition '(setf no-reader-slot)) 'function)))
 
 (define-test define-generic-arguments ()
   ;; Simple specialized arglist.
