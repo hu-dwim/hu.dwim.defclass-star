@@ -428,6 +428,7 @@
     :reader nil))
   (:documentation "Documented class."))
 
+#-ccl
 (define-test accessor-and-class-documentation ()
   (assert-string= "Documented class."
                   (documentation 'documented-class 'type))
