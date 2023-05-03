@@ -678,3 +678,17 @@ A slot with explicit documentation."
   (assert-expands
    (apply #'make-instance 'class (when something (list :a a)))
    (make-instance* 'class () (when something (list :a a)))))
+
+(define-test make-instance-ambiguous ()
+  (assert-error
+   'nclasses::hu.dwim.defclass-star-style-warning
+   (macroexpand-1
+    '(make-instance* 'class ())))
+  (assert-error
+   'nclasses::hu.dwim.defclass-star-style-warning
+   (macroexpand-1
+    '(make-instance* 'class (when something (list :a a)))))
+  (handler-bind ((warning #'muffle-warning))
+    (assert-expands
+     (apply #'make-instance 'class (when something (list :a a)))
+     (make-instance* 'class (when something (list :a a))))))
