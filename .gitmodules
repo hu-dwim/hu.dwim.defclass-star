@@ -18,8 +18,8 @@
 	path = _build/cl-ppcre
 	url = https://github.com/edicl/cl-ppcre
 	shallow = true
-[submodule "_build/alexandria.git"]
-	path = _build/alexandria.git
+[submodule "_build/alexandria"]
+	path = _build/alexandria
 	url = https://gitlab.common-lisp.net/alexandria/alexandria.git
 	shallow = true
 [submodule "_build/iterate.git"]
