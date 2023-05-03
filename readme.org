@@ -113,6 +113,15 @@ outside the implied method:
 
 See the =define-generic= documentation for more examples and details.
 
+**** :export-generic-name-p (option) and \*export-generic-name-p\* (variable)
+These allow to export generic name after defining it:
+#+begin_src lisp
+  (define-generic foo ((a integer))
+    (bar a)
+    (:export-generic-name-p t))
+#+end_src
+
+
 *** make-instance*
 There are several idioms that heavily object-oriented CL code converges to:
 - =(make-instance 'class :width width :height height)= :: repetitive
