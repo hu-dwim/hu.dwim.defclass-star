@@ -7,6 +7,8 @@
   :author "dwim.hu & Atlas Engineer LLC"
   :maintainer "Atlas Engineer LLC"
   :homepage "https://github.com/atlas-engineer/nclasses"
+  :bug-tracker "https://github.com/atlas-engineer/nclasses/issues"
+  :source-control (:git "https://github.com/atlas-engineer/nclasses.git")
   :license "Public Domain"
   :depends-on (moptilities)
   :in-order-to ((test-op (test-op "nclasses/tests")
