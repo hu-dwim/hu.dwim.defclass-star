@@ -598,10 +598,10 @@ BODY can be a list of `defgeneric' options (processed as-is, even
   :documentation option of `defgeneric'.
 - If there are non-option forms, they are put together into a separate
   :method option under ARGLIST.
-- If there's a `declare' form, it's put as a `declare' option of
-  `defgeneric'. This may seem irregular if the method body also needs
-  declarations, but in such a case one's better off with a :method
-  option or `defgeneric' for the method with `declare'.
+- If there's a `declare' form:
+  - If it's generic-friendly (optimize for speed or space), then it's
+    put into both generic body and :method body (if any).
+  - Otherwise it's only put into :method (creating it if necessary).
 - If there's an `:export-generic-name-p' boolean option, export (T) or
   don't export (NIL) the generic symbol.
 
