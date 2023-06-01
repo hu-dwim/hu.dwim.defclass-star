@@ -644,6 +644,72 @@ A slot with explicit documentation."
                     "If :export-generic-name-p is true, export the name."
                     (:export-generic-name-p t)))))
 
+(define-test define-generic-smart-declarations ()
+  ;; Method-only declaration.
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (:method (a b &key c)
+           (declare (ignorable a b c))
+           (+ a b c))))
+   (define-generic generic (a b &key c)
+     (declare (ignorable a b c))
+     (+ a b c)))
+  ;; Generic+method declaration.
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (declare (optimize (speed 1)))
+         (:method (a b &key c)
+           (declare (optimize (speed 1)))
+           (+ a b c))))
+   (define-generic generic (a b &key c)
+     (declare (optimize (speed 1)))
+     (+ a b c)))
+  ;; Shortened declaration
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (declare (optimize speed))
+         (:method (a b &key c)
+           (declare (optimize speed))
+           (+ a b c))))
+   (define-generic generic (a b &key c)
+     (declare (optimize speed))
+     (+ a b c)))
+  ;; Several optimizations
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (declare (optimize speed (space 2)))
+         (:method (a b &key c)
+           (declare (optimize speed (space 2)))
+           (+ a b c))))
+   (define-generic generic (a b &key c)
+     (declare (optimize speed (space 2)))
+     (+ a b c)))
+  ;; Several declarations
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (declare (optimize speed (space 2)))
+         (:method (a b &key c)
+           (declare (optimize speed (space 2)))
+           (declare (ignorable a b c))
+           (+ a b c))))
+   (define-generic generic (a b &key c)
+     (declare (optimize speed (space 2)))
+     (declare (ignorable a b c))
+     (+ a b c)))
+  ;; Forced method body.
+  (assert-expands
+   (prog1
+       (defgeneric generic (a b &key c)
+         (:method (a b &key c)
+           (declare (ignorable a b c)))))
+   (define-generic generic (a b &key c)
+     (declare (ignorable a b c)))))
+
 
 (define-test make-instance-star-backward-compatible ()
   (assert-expands

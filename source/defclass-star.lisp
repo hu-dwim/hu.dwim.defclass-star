@@ -623,50 +623,63 @@ Example:
   (:method ((a string) (b integer))
    (error \"Cannot use `add' on strings!\"))
   (:documentation \"Adds A and B, coercing them to fixnum if the sum is too big.\"))"
-  (let* ((documentation (if (stringp (first body))
-                            (first body)
-                            nil))
-         (declarations (remove-if-not (lambda (form)
-                                        (and (listp form) (eq 'declare (first form))))
-                                      body))
-         (forms (if documentation
-                    (rest body)
-                    body))
-         ;; NOTE: `set-difference' can shuffle the order of elements, thus `remove-if'.
-         (forms (remove-if (lambda (f) (member f declarations :test #'equal)) forms))
-         (options (remove-if-not (lambda (form)
-                                   (keywordp (first (uiop:ensure-list form))))
-                                 forms))
-         ;; NOTE: `set-difference' can shuffle the order of elements, thus `remove-if'.
-         (method-body (remove-if (lambda (f) (member f options :test #'equal)) forms))
-         (export-generic-name-p (find :export-generic-name-p options :key #'first))
-         (options (remove export-generic-name-p options :test #'equal))
-         (export-p (if export-generic-name-p
-                       (second export-generic-name-p)
-                       *export-generic-name-p*))
-         (generalized-arglist (generalize-arglist arglist)))
-    (when (and (not (equal generalized-arglist arglist))
-               (every #'null (list method-body options)))
-      (style-warn "Specialized arglist used without method body in define-generic: ~a" arglist))
-    `(prog1
-         (defgeneric ,name ,generalized-arglist
-           ,@declarations
-           ,@(when method-body
-               `((:method ,arglist
-                   ,@method-body)))
-           ,@options
-           ,@(when documentation
-               `((:documentation ,documentation))))
-       ;; FIXME: Maybe only export if package of generic function name
-       ;; matches *PACKAGE*?
-       ,@(when export-p
-           `((eval-when (:compile-toplevel :load-toplevel :execute)
-               (export ',name ,(package-name *package*)))))
-       ,@(let ((documentation (or documentation
-                                  (second (first (member :documentation options :key #'first))))))
-           (when documentation
-             `((setf (documentation ',name 'function) ,documentation)
-               (setf (documentation (fdefinition ',name) 'function) ,documentation)))))))
+  (flet ((stable-set-difference (list1 list2)
+           (remove-if (lambda (f) (member f list2 :test #'equal))
+                      list1)))
+    (let* ((documentation (if (stringp (first body))
+                              (first body)
+                              nil))
+           (declarations (remove-if-not (lambda (form)
+                                          (and (listp form) (eq 'declare (first form))))
+                                        body))
+           (generic-declarations (remove-if (lambda (d)
+                                              (or (> (length d) 2)
+                                                  (not (eq 'optimize (first (second d))))
+                                                  (notevery (lambda (o)
+                                                              (let ((feature (first (uiop:ensure-list o))))
+                                                                (or (eq feature 'speed)
+                                                                    (eq feature 'space))))
+                                                            (rest (second d)))))
+                                            declarations))
+           (forms (if documentation
+                      (rest body)
+                      body))
+           (forms (stable-set-difference forms declarations))
+           (options (remove-if-not (lambda (form)
+                                     (keywordp (first (uiop:ensure-list form))))
+                                   forms))
+           (method-body (stable-set-difference forms options))
+           (export-generic-name-p (find :export-generic-name-p options :key #'first))
+           (options (remove export-generic-name-p options :test #'equal))
+           (export-p (if export-generic-name-p
+                         (second export-generic-name-p)
+                         *export-generic-name-p*))
+           (generalized-arglist (generalize-arglist arglist)))
+      (when (and (not (equal generalized-arglist arglist))
+                 (every #'null (list method-body options)))
+        (style-warn "Specialized arglist used without method body in define-generic: ~a" arglist))
+      `(prog1
+           (defgeneric ,name ,generalized-arglist
+             ,@generic-declarations
+             ,@(when (or method-body
+                         (not (equal generic-declarations
+                                     declarations)))
+                 `((:method ,arglist
+                     ,@declarations
+                     ,@method-body)))
+             ,@options
+             ,@(when documentation
+                 `((:documentation ,documentation))))
+         ;; FIXME: Maybe only export if package of generic function name
+         ;; matches *PACKAGE*?
+         ,@(when export-p
+             `((eval-when (:compile-toplevel :load-toplevel :execute)
+                 (export ',name ,(package-name *package*)))))
+         ,@(let ((documentation (or documentation
+                                    (second (first (member :documentation options :key #'first))))))
+             (when documentation
+               `((setf (documentation ',name 'function) ,documentation)
+                 (setf (documentation (fdefinition ',name) 'function) ,documentation))))))))
 
 (setf (macro-function 'defgeneric*) (macro-function 'define-generic)
       (documentation 'defgeneric* 'function) (documentation 'define-generic 'function)
