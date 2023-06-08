@@ -623,15 +623,17 @@ Example:
   (:method ((a string) (b integer))
    (error \"Cannot use `add' on strings!\"))
   (:documentation \"Adds A and B, coercing them to fixnum if the sum is too big.\"))"
-  (flet ((stable-set-difference (list1 list2)
-           (remove-if (lambda (f) (member f list2 :test #'equal))
-                      list1)))
-    (let* ((documentation (if (stringp (first body))
-                              (first body)
-                              nil))
-           (declarations (remove-if-not (lambda (form)
-                                          (and (listp form) (eq 'declare (first form))))
-                                        body))
+  (multiple-value-bind (body declarations documentation)
+      (uiop:parse-body body :documentation t)
+    ;; NOTE: `uiop:parse-body' parses a single-docstring body into
+    ;; ((STRING) NIL NIL), instead of (NIL NIL (STRING)) :/
+    (let* ((single-docstring-body (and (= 1 (length body))
+                                       (stringp (first body))))
+           (documentation (or documentation
+                              (when single-docstring-body
+                                (first body))))
+           (body (unless single-docstring-body
+                   body))
            (generic-declarations (remove-if (lambda (d)
                                               (or (> (length d) 2)
                                                   (not (eq 'optimize (first (second d))))
@@ -641,14 +643,10 @@ Example:
                                                                     (eq feature 'space))))
                                                             (rest (second d)))))
                                             declarations))
-           (forms (if documentation
-                      (rest body)
-                      body))
-           (forms (stable-set-difference forms declarations))
            (options (remove-if-not (lambda (form)
                                      (keywordp (first (uiop:ensure-list form))))
-                                   forms))
-           (method-body (stable-set-difference forms options))
+                                   body))
+           (method-body (remove-if (lambda (f) (member f options :test #'equal)) body))
            (export-generic-name-p (find :export-generic-name-p options :key #'first))
            (options (remove export-generic-name-p options :test #'equal))
            (export-p (if export-generic-name-p
