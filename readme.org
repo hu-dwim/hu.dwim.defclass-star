@@ -186,6 +186,12 @@ See the =make-instance*= documentation for more examples and details.
 
 ** Change Log
 
+*** 0.6.0
+- Make =define-generic= declaration parsing smarter.
+- Ensure more correct =define-generic= body parsing.
+  - Interpret a single-string body as method body and signal warnings
+    due to the ambiguity of it.
+
 *** 0.5.0
 - Auto-generate documentation for class predicates.
 - Auto-generate documentation for slot accessors.
