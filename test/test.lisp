@@ -542,8 +542,7 @@ A slot with explicit documentation."
      (+ a b)))
   ;; Warns on specialized args without body.
   (assert-warning 'nclasses::hu.dwim.defclass-star-style-warning
-                  (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil))
-                                   "Documentation"))))
+                  (macroexpand-1 '(define-generic generic ((a a) (b b) &key (c nil))))))
 
 (define-test define-generic-body ()
   ;; Two methods---one implicit, one explicit.
@@ -558,15 +557,10 @@ A slot with explicit documentation."
      (+ a b)
      (:method ((a x) (b z) &key c)
        c)))
-  ;; Single documentation body.
-  (assert-expands
-   (prog1
-       (defgeneric generic (a b &key c)
-         (:documentation "Body consisting of documentation."))
-     (setf (documentation 'generic 'function) "Body consisting of documentation.")
-     (setf (documentation (fdefinition 'generic) 'function) "Body consisting of documentation."))
-   (define-generic generic (a b &key c)
-     "Body consisting of documentation."))
+  ;; Single documentation body—warning.
+  (assert-error 'nclasses::hu.dwim.defclass-star-style-warning
+                (macroexpand-1 '(define-generic generic (a b &key c)
+                                 "Body consisting of pseudo-documentation.")))
   ;; Documentation and implicit method.
   (assert-expands
    (prog1

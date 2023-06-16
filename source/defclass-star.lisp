@@ -625,16 +625,24 @@ Example:
   (:documentation \"Adds A and B, coercing them to fixnum if the sum is too big.\"))"
   (multiple-value-bind (body declarations documentation)
       (uiop:parse-body body :documentation t)
-    ;; NOTE: `uiop:parse-body' parses a single-docstring body into
-    ;; ((STRING) NIL NIL), instead of (NIL NIL (STRING)) :/
-    (let* ((single-docstring-body (and (= 1 (length body))
-                                       (stringp (first body))))
-           (documentation (or documentation
-                              (when single-docstring-body
-                                (first body))))
-           (body (unless single-docstring-body
-                   body))
-           (generic-declarations (remove-if (lambda (d)
+    (when (and (= 1 (length body))
+               (stringp (first body)))
+      (style-warn "Body of DEFINE-GENERIC contains a single string:
+~s.
+It's interpreted as a method body by default.
+
+If you meant this string to be a generic docstring, and not a method
+body, add an explicit NIL or some other body form:
+(define-generic name (arg1 arg2)
+  \"Docstring\"
+  'body-form)
+
+If you meant it as a body form, do nothing, or provide explicit
+documentation or any other option:
+(define-generic name (arg1 arg2)
+  \"Docstring\"
+  (:documentation \"Real docstring\"))" (first body)))
+    (let* ((generic-declarations (remove-if (lambda (d)
                                               (or (> (length d) 2)
                                                   (not (eq 'optimize (first (second d))))
                                                   (notevery (lambda (o)
