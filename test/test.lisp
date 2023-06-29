@@ -3,6 +3,8 @@
 
 (in-package :nclasses/test)
 
+;;; TODO: Test predicate generation.
+
 (defun with-test-class-options (thunk)
   "A context sets the class options to specific defaults."
   (let ((*package* #.*package*)

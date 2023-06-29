@@ -400,10 +400,11 @@ If the slot is a boolean, it ensures the name is suffixed with \"?\"."
                               *predicate-name-transformer*)
                      (let ((pred-name (funcall *predicate-name-transformer* name)))
                        `((unless (fboundp ',pred-name)
-                           (defun ,pred-name (object)
+                           (define-generic ,pred-name (object)
                              ,(let ((*print-case* :downcase))
                                 (format nil "Auto-generated predicate for whether OBJECT is an instance of `~a'."
                                         name))
+                             ;; FIXME: Maybe use handler-bind and #'muffle-warning?
                              #+sbcl
                              (declare (sb-ext:muffle-conditions style-warning))
                              (typep object ',name)))
