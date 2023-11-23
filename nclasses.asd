@@ -10,30 +10,22 @@
   :bug-tracker "https://github.com/atlas-engineer/nclasses/issues"
   :source-control (:git "https://github.com/atlas-engineer/nclasses.git")
   :license "Public Domain"
-  :depends-on (moptilities)
-  :in-order-to ((test-op (test-op "nclasses/tests")
-                         (test-op "nclasses/tests/compilation")))
+  :depends-on ("moptilities")
   :serial t
   :pathname "source/"
   :components ((:file "package")
                (:file "duplicates")
-               (:file "defclass-star")))
-
-(defsystem "nclasses/submodules"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-submodule-system)
+               (:file "defclass-star"))
+  :in-order-to ((test-op (test-op "nclasses/tests"))))
 
 (defsystem "nclasses/tests"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-test-system
-  :depends-on (nclasses moptilities)
-  :targets (:package :nclasses/test)
-  :pathname "test/"
+  :depends-on ("nclasses" "lisp-unit2")
+  :serial t
+  :pathname "tests/"
   :components ((:file "package")
-               (:file "test" :depends-on ("package"))))
-
-(defsystem "nclasses/tests/compilation"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-compilation-test-system
-  :depends-on (nclasses)
-  :packages (:nclasses))
+               (:file "tests"))
+  :perform (test-op (op c)
+                    (eval-input
+                     "(lisp-unit2:run-tests
+                       :package :nclasses/tests
+                       :run-contexts #'lisp-unit2:with-summary-context)")))
