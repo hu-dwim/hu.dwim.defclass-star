@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: hu.dwim & Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: Public Domain
 
-(in-package :nclasses/test)
+(in-package :nclasses/tests)
 
 ;;; TODO: Test predicate generation.
 
