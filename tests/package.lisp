@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: hu.dwim & Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: Public Domain
 
-(in-package :common-lisp-user)
+(in-package :cl-user)
 
-(defpackage :nclasses/test
+(defpackage :nclasses/tests
   (:use :cl :nclasses :lisp-unit2))
 
 (defpackage :nclasses/test.dummy)
