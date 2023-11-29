@@ -186,6 +186,10 @@ See the =make-instance*= documentation for more examples and details.
 
 ** Change Log
 
+*** 0.6.1
+
+- Remove =NASDF= as a dependency.
+
 *** 0.6.0
 - Make =define-generic= declaration parsing smarter.
 - Ensure more correct =define-generic= body parsing.
