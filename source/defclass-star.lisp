@@ -603,8 +603,8 @@ BODY can be a list of `defgeneric' options (processed as-is, even
   - If it's generic-friendly (optimize for speed or space), then it's
     put into both generic body and :method body (if any).
   - Otherwise it's only put into :method (creating it if necessary).
-- If there's an `:export-generic-name-p' boolean option, export (T) or
-  don't export (NIL) the generic symbol.
+- If there's an `:export-generic-name-p'/`:export' boolean option,
+  export (T) or don't export (NIL) the generic symbol.
 
 Example:
 
@@ -656,7 +656,8 @@ documentation or any other option:
                                      (keywordp (first (uiop:ensure-list form))))
                                    body))
            (method-body (remove-if (lambda (f) (member f options :test #'equal)) body))
-           (export-generic-name-p (find :export-generic-name-p options :key #'first))
+           (export-generic-name-p (or (find :export-generic-name-p options :key #'first)
+                                      (find :export options :key #'first)))
            (options (remove export-generic-name-p options :test #'equal))
            (export-p (if export-generic-name-p
                          (second export-generic-name-p)
